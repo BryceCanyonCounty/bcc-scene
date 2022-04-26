@@ -18,7 +18,7 @@
 All configurations available in `/config.lua`
 
 ## Disclaimer
-- I utilized Skate and rickx's `lto_scene` codebase from the vorp prebuilt server for the base of this project.
+- I utilized Skate and rickx's [lto_scene](https://github.com/zelbeus/ricx_scene) codebase from the vorp prebuilt server for the base of this project.
 - I utilized the Sphere locator object from a similar old FiveM script [nh-scenes](https://github.com/nerohiro/nh-scenes). 
 
 ## TODO
