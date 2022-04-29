@@ -22,7 +22,8 @@ All configurations available in `/config.lua`
 - I utilized the Sphere locator object from a similar old FiveM script [nh-scenes](https://github.com/nerohiro/nh-scenes). 
 
 ## TODO
-- Add better ui
+- Add better UI
+- Migrate from (or make toggle) to store into sqldb vs json file
 - Add screenshots to how-to-use
 
  ## Dependency
