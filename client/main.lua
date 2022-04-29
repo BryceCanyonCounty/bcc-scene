@@ -164,27 +164,27 @@ Citizen.CreateThread(function() --
                                 PromptSetActiveGroupThisFrame(SceneGroup, label)
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, DeletePrompt) then
                                     editing = true
-                                    TriggerServerEvent("bcc_scene:delete", i)
+                                    TriggerServerEvent("bcc_scene:delete", i, Scenes[i].coords)
                                 end
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
                                     editing = true
-                                    TriggerServerEvent("bcc_scene:edit", i)
+                                    TriggerServerEvent("bcc_scene:edit", i, Scenes[i].coords)
                                 end
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, ColorPrompt) then
                                     editing = true
-                                    TriggerServerEvent("bcc_scene:color", i)
+                                    TriggerServerEvent("bcc_scene:color", i, Scenes[i].coords, Scenes[i].color)
                                 end
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, FontPrompt) then
                                     editing = true
-                                    TriggerServerEvent("bcc_scene:font", i)
+                                    TriggerServerEvent("bcc_scene:font", i, Scenes[i].coords, Scenes[i].font)
                                 end
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, BGPrompt) then
                                     editing = true
-                                    TriggerServerEvent("bcc_scene:background", i)
+                                    TriggerServerEvent("bcc_scene:background", i, Scenes[i].coords, Scenes[i].bg)
                                 end
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, ScalePrompt) then
                                     editing = true
-                                    TriggerServerEvent("bcc_scene:scale", i)
+                                    TriggerServerEvent("bcc_scene:scale", i, Scenes[i].coords, Scenes[i].scale)
                                 end
                                 -- if Citizen.InvokeNative(0xC92AC953F0A982AE, MovePrompt) then
                                 --     moving = true
@@ -235,7 +235,7 @@ AddEventHandler('bcc_scene:sendscenes', function(scenes)
 end)
 
 RegisterNetEvent('bcc_scene:client_edit')
-AddEventHandler('bcc_scene:client_edit', function(nr)
+AddEventHandler('bcc_scene:client_edit', function(nr, coords)
     local scenetext = ""
     Citizen.CreateThread(function()
         AddTextEntry('FMMC_MPM_NA', Config.Texts.AddDetails)
@@ -247,7 +247,7 @@ AddEventHandler('bcc_scene:client_edit', function(nr)
         if (GetOnscreenKeyboardResult()) then
             scenetext = GetOnscreenKeyboardResult()
 
-            TriggerServerEvent("bcc_scene:edited", scenetext, nr)
+            TriggerServerEvent("bcc_scene:edited", scenetext, nr, coords)
             CancelOnscreenKeyboard()
         end
     end)

@@ -1,5 +1,15 @@
 Config = {}
 
+------------------- General Configurations -------------------
+
+-- TODO: Add store to DB functionality
+Config.StoreToDB = false
+
+-- This will reset all scenes on server reset/start
+Config.RestartDelete = true
+
+------------------- Display Text Configurations -------------------
+
 Config.Prompts = {
     Edit = {[1] = "Edit Text", [2] = 0xC7B5340A},
     Delete = {[1] = "Delete", [2] = 0x156F7119},
@@ -12,16 +22,19 @@ Config.Prompts = {
     Move = {[1] = "Move", [2] = 0x26E9DC00}
 }
 
-Config.ViewDistance = 5.0
-Config.EditDistance = 2.0
-Config.RestartDelete = true
-
 Config.Texts = {
     AddDetails = "Add Scene Details",
 }
 
+------------------- Physical Text Configurations -------------------
+
+Config.ViewDistance = 5.0
+Config.EditDistance = 2.0
+
+-- How large do you want to allow the scene text to be
 Config.MaxScale = 0.8
 
+------------------- Styles -------------------
 Config.Fonts = {0,1,5,6, 9, 11, 12, 15, 18, 19, 20, 22, 24, 25, 28, 29}
 
 Config.Colors = {

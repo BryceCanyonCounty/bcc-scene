@@ -32,4 +32,5 @@ All configurations available in `/config.lua`
 - Migrate from (or make a config toggle) to store into sqldb vs json file (db will give longer lived persistence to the scene texts)
 
  ## Dependency
- - Vorp Core
+ - [Vorp Core](https://github.com/VORPCORE/vorp-core-lua)
+ - [ghmattimysql](https://github.com/VORPCORE/ghmattimysql-oxmysql)
