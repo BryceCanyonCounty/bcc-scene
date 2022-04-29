@@ -10,9 +10,14 @@
 
 ## How-to-use
 1. Type `/scene` to activate tracking ball
+![step 1](/assets/readme1.png)
 2. Type `/scene:place` will save the coords of the ball and pop up a text prompt
+![step 1](/assets/readme2.png)
 3. Type what you want to display on the scene
 4. Click enter
+5. Your text should appear in the given location.
+![step 1](/assets/readme2.png)
+
 
 ## How-to-configure
 All configurations available in `/config.lua`
@@ -23,8 +28,7 @@ All configurations available in `/config.lua`
 
 ## TODO
 - Add better UI
-- Migrate from (or make toggle) to store into sqldb vs json file
-- Add screenshots to how-to-use
+- Migrate from (or make a config toggle) to store into sqldb vs json file (db will give longer lived persistence to the scene texts)
 
  ## Dependency
  - Vorp Core
