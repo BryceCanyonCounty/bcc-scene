@@ -6,6 +6,7 @@
 1. Download this repo/codebase
 2. Extract and place `bcc-scene` into your `resources` folder
 3. Add `ensure bcc-scene` to your `server.cfg` file
+4. _(optional)_ remove the /assets readme images to save on resource space.
 4. Restart your server (unless you have nightly restarts)
 
 ## How-to-use
