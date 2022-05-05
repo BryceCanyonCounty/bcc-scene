@@ -11,7 +11,8 @@ server_scripts {
 
 client_scripts {
 	'config.lua',
-	'client/main.lua'
+	'client/main.lua',
+	'client/warmenu.lua'
 }
 
 dependency 'vorp_core'

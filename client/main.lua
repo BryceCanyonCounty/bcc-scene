@@ -27,82 +27,6 @@ GetCoordsFromCam = function(distance, coords)
     return vector3(coords[1] + direction[1] * distance, coords[2] + direction[2] * distance, coords[3] + direction[3] * distance)
 end
 
-function ScenePrompts()
-    Citizen.CreateThread(function()
-        local str = Config.Prompts.Edit[1]
-        EditPrompt = PromptRegisterBegin()
-        PromptSetControlAction(EditPrompt, Config.Prompts.Edit[2])
-        str = CreateVarString(10, 'LITERAL_STRING', str)
-        PromptSetText(EditPrompt, str)
-        PromptSetEnabled(EditPrompt, 1)
-        PromptSetVisible(EditPrompt, 1)
-        PromptSetStandardMode(EditPrompt, 1)
-        PromptSetGroup(EditPrompt, SceneGroup)
-        Citizen.InvokeNative(0xC5F428EE08FA7F2C, EditPrompt, true)
-        PromptRegisterEnd(EditPrompt)
-
-        local str2 = Config.Prompts.Delete[1]
-        DeletePrompt = PromptRegisterBegin()
-        PromptSetControlAction(DeletePrompt, Config.Prompts.Delete[2])
-        str2 = CreateVarString(10, 'LITERAL_STRING', str2)
-        PromptSetText(DeletePrompt, str2)
-        PromptSetEnabled(DeletePrompt, 1)
-        PromptSetVisible(DeletePrompt, 1)
-        PromptSetStandardMode(DeletePrompt, 1)
-        PromptSetGroup(DeletePrompt, SceneGroup)
-        Citizen.InvokeNative(0xC5F428EE08FA7F2C, DeletePrompt, true)
-        PromptRegisterEnd(DeletePrompt)
-
-        local str3 = Config.Prompts.Color[1]
-        ColorPrompt = PromptRegisterBegin()
-        PromptSetControlAction(ColorPrompt, Config.Prompts.Color[2])
-        str3 = CreateVarString(10, 'LITERAL_STRING', str3)
-        PromptSetText(ColorPrompt, str3)
-        PromptSetEnabled(ColorPrompt, 1)
-        PromptSetVisible(ColorPrompt, 1)
-        PromptSetStandardMode(ColorPrompt, 1)
-        PromptSetGroup(ColorPrompt, SceneGroup)
-        Citizen.InvokeNative(0xC5F428EE08FA7F2C, ColorPrompt, true)
-        PromptRegisterEnd(ColorPrompt)
-
-        local str4 = Config.Prompts.Font[1]
-        FontPrompt = PromptRegisterBegin()
-        PromptSetControlAction(FontPrompt, Config.Prompts.Font[2])
-        str4 = CreateVarString(10, 'LITERAL_STRING', str4)
-        PromptSetText(FontPrompt, str4)
-        PromptSetEnabled(FontPrompt, 1)
-        PromptSetVisible(FontPrompt, 1)
-        PromptSetStandardMode(FontPrompt, 1)
-        PromptSetGroup(FontPrompt, SceneGroup)
-        Citizen.InvokeNative(0xC5F428EE08FA7F2C, FontPrompt, true)
-        PromptRegisterEnd(FontPrompt)
-
-        local str5 = Config.Prompts.BG[1]
-        BGPrompt = PromptRegisterBegin()
-        PromptSetControlAction(BGPrompt, Config.Prompts.BG[2])
-        str5 = CreateVarString(10, 'LITERAL_STRING', str5)
-        PromptSetText(BGPrompt, str5)
-        PromptSetEnabled(BGPrompt, 1)
-        PromptSetVisible(BGPrompt, 1)
-        PromptSetStandardMode(BGPrompt, 1)
-        PromptSetGroup(BGPrompt, SceneGroup)
-        Citizen.InvokeNative(0xC5F428EE08FA7F2C, BGPrompt, true)
-        PromptRegisterEnd(BGPrompt)
-
-        local str6 = Config.Prompts.Scale[1]
-        ScalePrompt = PromptRegisterBegin()
-        PromptSetControlAction(ScalePrompt, Config.Prompts.Scale[2])
-        str6 = CreateVarString(10, 'LITERAL_STRING', str6)
-        PromptSetText(ScalePrompt, str6)
-        PromptSetEnabled(ScalePrompt, 1)
-        PromptSetVisible(ScalePrompt, 1)
-        PromptSetStandardMode(ScalePrompt, 1)
-        PromptSetGroup(ScalePrompt, SceneGroup)
-        Citizen.InvokeNative(0xC5F428EE08FA7F2C, ScalePrompt, true)
-        PromptRegisterEnd(ScalePrompt)
-    end)
-end
-
 function DrawText3D(x, y, z, text, type, font, bg, scale)
     local onScreen, _x, _y = GetScreenCoordFromWorldCoord(x, y, z)
     local px, py, pz = table.unpack(GetGameplayCamCoord())
@@ -126,9 +50,18 @@ function DrawText3D(x, y, z, text, type, font, bg, scale)
     end
 end
 
+function whenKeyJustPressed(key)
+    if Citizen.InvokeNative(0x580417101DDB492F, 0, key) then
+        return true
+    else
+        return false
+    end
+end
+
 local addMode = false
 local editing = false
 local moving = false
+local closest = nil
 
 Citizen.CreateThread(function()
     while true do
@@ -139,74 +72,130 @@ Citizen.CreateThread(function()
     end
 end)
 
-Citizen.CreateThread(function() --
-    ScenePrompts()
-    TriggerServerEvent("bcc_scene:getscenes")
+Citizen.CreateThread(function()
     while true do
         Citizen.Wait(1)
+        if Config.HotKeysEnabled == true then
+            if whenKeyJustPressed(Config.HotKeys.Scene) then
+                if addMode then
+                    addMode = false
+                elseif not addMode then
+                    addMode = true
+                end
+            end
 
+            if whenKeyJustPressed(Config.HotKeys.Place) then
+                if addMode then
+                    TriggerEvent("bcc_scene:start")
+                else
+                    TriggerEvent("vorp:TipBottom", Config.Texts.SceneErr, 3000)
+                end
+            end
+        end
+    end
+end)
+
+
+Citizen.CreateThread(function()
+    WarMenu.CreateMenu('scenemenu', Config.Texts.MenuTitle)
+
+    local str = Config.Prompts.Edit[1]
+    EditPrompt = PromptRegisterBegin()
+    PromptSetControlAction(EditPrompt, Config.Prompts.Edit[2])
+    str = CreateVarString(10, 'LITERAL_STRING', str)
+    PromptSetText(EditPrompt, str)
+    PromptSetEnabled(EditPrompt, 1)
+    PromptSetVisible(EditPrompt, 1)
+    PromptSetStandardMode(EditPrompt, 1)
+    PromptSetGroup(EditPrompt, SceneGroup)
+    Citizen.InvokeNative(0xC5F428EE08FA7F2C, EditPrompt, true)
+    PromptRegisterEnd(EditPrompt)
+
+    TriggerServerEvent("bcc_scene:getscenes")
+    while true do
+        Citizen.Wait(0)
+        local x, y, z
         if addMode == true then
             x, y, z = table.unpack(SceneTarget())
             Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15, 0.15, 93, 17, 100, 255, false, false, 2, false, false)
         end
 
         if Scenes[1] ~= nil then
+            local closest = {
+                dist = 99999999
+            }
             for i, v in pairs(Scenes) do
                 local cc = GetEntityCoords(PlayerPedId())
+                local edist =  Config.EditDistance
+                if addMode == true then
+                    cc = {
+                        x = x,
+                        y = y,
+                        z = z
+                    }
+                    edist = 0.1
+                end
+
                 local sc = Scenes[i].coords
-                GetDistanceBetweenCoords(x1, y1, z1, x2, y2, z2, useZ)
+                -- GetDistanceBetweenCoords(x1, y1, z1, x2, y2, z2, useZ)
                 local dist = GetDistanceBetweenCoords(cc.x, cc.y, cc.z, sc.x, sc.y, sc.z, 1)
                 if dist < Config.ViewDistance then
-                    if dist < Config.EditDistance then
-                        if editing == false then
-                            if moving == false then
-                                local label = CreateVarString(10, 'LITERAL_STRING', "Scene")
-                                PromptSetActiveGroupThisFrame(SceneGroup, label)
-                                if Citizen.InvokeNative(0xC92AC953F0A982AE, DeletePrompt) then
-                                    editing = true
+                    if (dist < edist) and dist <= closest.dist then
+                        closest = {
+                            dist = dist
+                        }
+
+                        local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
+                        PromptSetActiveGroupThisFrame(SceneGroup, label)
+                        if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
+                            WarMenu.SetSubTitle('scenemenu',  Config.Texts.MenuSubCompliment..Scenes[i].text) 
+                            WarMenu.OpenMenu('scenemenu')
+                        end
+                        
+                        if editing == false then                       
+                            if WarMenu.IsMenuOpened('scenemenu') then
+                                if WarMenu.Button(Config.Texts.Delete) then
                                     TriggerServerEvent("bcc_scene:delete", i)
+                                    WarMenu.CloseMenu()
                                 end
-                                if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
-                                    editing = true
+
+                                if WarMenu.Button(Config.Texts.Edit) then
                                     TriggerServerEvent("bcc_scene:edit", i)
+                                    WarMenu.CloseMenu()
                                 end
-                                if Citizen.InvokeNative(0xC92AC953F0A982AE, ColorPrompt) then
-                                    editing = true
-                                    TriggerServerEvent("bcc_scene:color", i)
-                                end
-                                if Citizen.InvokeNative(0xC92AC953F0A982AE, FontPrompt) then
-                                    editing = true
+
+                                if WarMenu.Button(Config.Texts.Font) then
                                     TriggerServerEvent("bcc_scene:font", i)
                                 end
-                                if Citizen.InvokeNative(0xC92AC953F0A982AE, BGPrompt) then
-                                    editing = true
-                                    TriggerServerEvent("bcc_scene:background", i)
-                                end
-                                if Citizen.InvokeNative(0xC92AC953F0A982AE, ScalePrompt) then
-                                    editing = true
+
+                                if WarMenu.Button(Config.Texts.Scale) then
                                     TriggerServerEvent("bcc_scene:scale", i)
                                 end
-                                -- if Citizen.InvokeNative(0xC92AC953F0A982AE, MovePrompt) then
-                                --     moving = true
-                                --     editing = true
-                                -- end
-                            else
-                                -- local label = CreateVarString(10, 'LITERAL_STRING', "Scene")
-                                -- PromptSetActiveGroupThisFrame(SceneGroup, label)
-                                -- if Citizen.InvokeNative(0xC92AC953F0A982AE, MovebackPrompt) then
-                                --     moving = false
-                                --     editing = true
-                                -- end
-                                -- if Citizen.InvokeNative(0xC92AC953F0A982AE, MoverightPrompt) then
-                                --     editing = true
-                                --     TriggerServerEvent("bcc_scene:moveright", i)
-                                -- end
+
+                                if WarMenu.Button(Config.Texts.Color) then
+                                    TriggerServerEvent("bcc_scene:color", i)
+                                end
+
+                                if WarMenu.Button(Config.Texts.BackgroundColor) then
+                                    TriggerServerEvent("bcc_scene:background", i)
+                                end
+
+                                if WarMenu.Button(Config.Texts.Exit) then
+                                    WarMenu.CloseMenu()
+                                end
+
+                                WarMenu.Display()
                             end
-                        else
-                            -- print("Wait before edit")
                         end
                     end
-                    DrawText3D(sc.x, sc.y, sc.z, "*" .. Scenes[i].text .. "*", Scenes[i].color, Scenes[i].font,
+
+                    local outtext = Scenes[i].text
+
+                    if Config.TextAsterisk == true then
+                         outtext = "*" .. Scenes[i].text .. "*"
+                    end
+
+                    DrawText3D(sc.x, sc.y, sc.z, outtext, Scenes[i].color, Scenes[i].font,
                         Scenes[i].bg, Scenes[i].scale)
                 end
             end
@@ -223,15 +212,19 @@ RegisterCommand('scene', function(source, args, raw)
 end)
 
 RegisterCommand('scene:place', function(source, args, raw)
-    TriggerEvent("bcc_scene:start")
+    if addMode then
+        TriggerEvent("bcc_scene:start")
+    else
+        TriggerEvent("vorp:TipBottom", Config.Texts.SceneErr, 3000)
+    end
 end)
 
 RegisterNetEvent('bcc_scene:sendscenes')
 AddEventHandler('bcc_scene:sendscenes', function(scenes)
     Scenes = scenes
-    for i, v in pairs(Scenes) do
-        print(Scenes[i])
-    end
+    -- for i, v in pairs(Scenes) do
+    --     print(Scenes[i])
+    -- end
 end)
 
 RegisterNetEvent('bcc_scene:client_edit')

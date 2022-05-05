@@ -1,29 +1,48 @@
 Config = {}
 
-Config.Prompts = {
-    Edit = {[1] = "Edit Text", [2] = 0xC7B5340A},
-    Delete = {[1] = "Delete", [2] = 0x156F7119},
-    Color = {[1] = "Change Color", [2] = 0x3C0A40F2},
-    Font = {[1] = "Change Font", [2] = 0xB2F377E8},
-    BG = {[1] = "Background",[2] = 0x4CC0E2FE},
-    Scale = {[1] = "Scale", [2] = 0x8CC9CD42},
-    Moveright = {[1] = "Right", [2] = 0xDEB34313},
-    Moveback = {[1] = "Return", [2] = 0xE30CD707},
-    Move = {[1] = "Move", [2] = 0x26E9DC00}
+Config.ViewDistance = 5.0
+Config.EditDistance = 1.0
+
+-- Keep this to true for best performance.
+Config.RestartDelete = true
+
+Config.HotKeysEnabled = true
+Config.HotKeys = {
+    Scene = 0x26E9DC00, 
+    Place = 0x8CC9CD42
 }
 
-Config.ViewDistance = 5.0
-Config.EditDistance = 2.0
-Config.RestartDelete = true
+Config.Prompts = {
+    Edit = {[1] = "Edit Text", [2] = 0x4CC0E2FE}
+}
 
 Config.Texts = {
     AddDetails = "Add Scene Details",
+    NoAuth = "You are not the owner of this scene",
+    SceneErr = "You must have scene enabled to place text",
+    MenuTitle = "Scene Editor",
+    MenuSubCompliment = "Current Text: ",
+    Delete = "Delete",
+    Edit = "Edit",
+    Font = "Change Font",
+    Scale = "Change Scale",
+    Color = "Change Color",
+    BackgroundColor  = "Change Background Color",
+    Exit = "Exit"
 }
 
+Config.StartingScale = 0.2
 Config.MaxScale = 0.8
 
-Config.Fonts = {0,1,5,6, 9, 11, 12, 15, 18, 19, 20, 22, 24, 25, 28, 29}
+-- 0 value = transparent
+Config.Defaults = {
+    Font = 1,
+    Color = 1,
+    BackgroundColor = 0
+}
 
+Config.TextAsterisk = true
+Config.Fonts = {0,1,5,6, 9, 11, 12, 15, 18, 19, 20, 22, 24, 25, 28, 29}
 Config.Colors = {
     --reds
     [1] = {128,0,0},

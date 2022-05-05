@@ -17,7 +17,7 @@ AddEventHandler("bcc_scene:add", function(text,coords)
     local Character = User.getUsedCharacter
     local identi = Character.identifier
     local charid = Character.charIdentifier	
-    local scene = {id = identi, charid = charid, text = _text, coords = coords, font = 1, color = 1, bg = 0, scale = 0.3}
+    local scene = {id = identi, charid = charid, text = _text, coords = coords, font = Config.Defaults.Font, color = Config.Defaults.Color, bg = Config.Defaults.BackgroundColor, scale = Config.StartingScale}
     local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
     local datas = json.decode(edata)
     datas[#datas+1] = scene
@@ -40,13 +40,13 @@ AddEventHandler("bcc_scene:delete", function(nr)
     local datas = json.decode(edata)
 	local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
-        --print(Character.charIdentifier,Character.identifier)
-        --print(datas[nr].charid,datas[nr].id)
-        if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
         table.remove( datas, nr)
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
         return
+    else
+        TriggerClientEvent("vorp:TipBottom", _source, Config.Texts.NoAuth, 2000)
     end
 end)
 
@@ -60,6 +60,8 @@ AddEventHandler("bcc_scene:edit", function(nr)
     if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
         TriggerClientEvent("bcc_scene:client_edit", _source, nr)
         return
+    else
+        TriggerClientEvent("vorp:TipBottom", _source, Config.Texts.NoAuth, 2000)
     end
 end)
 
@@ -87,12 +89,14 @@ AddEventHandler("bcc_scene:color", function(nr)
     local Character = User.getUsedCharacter
     if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
         datas[nr].color = datas[nr].color + 1
-            if datas[nr].color > #Config.Colors then
+        if datas[nr].color > #Config.Colors then
             datas[nr].color = 1
-            end
+        end
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
         return
+    else
+        TriggerClientEvent("vorp:TipBottom", _source, Config.Texts.NoAuth, 2000)
     end
 end)
 
@@ -103,14 +107,16 @@ AddEventHandler("bcc_scene:background", function(nr)
     local datas = json.decode(edata)
 	local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
-        if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-            datas[nr].bg = datas[nr].bg + 1
-            if datas[nr].bg > #Config.Colors then
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].bg = datas[nr].bg + 1
+        if datas[nr].bg > #Config.Colors then
             datas[nr].bg = 1
-            end
+        end
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
         return
+    else
+        TriggerClientEvent("vorp:TipBottom", _source, Config.Texts.NoAuth, 2000)
     end
 end)
 
@@ -121,14 +127,18 @@ AddEventHandler("bcc_scene:font", function(nr)
     local datas = json.decode(edata)
 	local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
-        if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-            datas[nr].font = datas[nr].font + 1
-            if datas[nr].font > #Config.Fonts then
+
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].font = datas[nr].font + 1
+        if datas[nr].font > #Config.Fonts then
             datas[nr].font = 1
-            end
+        end
+        
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
         return
+    else
+        TriggerClientEvent("vorp:TipBottom", _source, Config.Texts.NoAuth, 2000)
     end
 end)
 
@@ -150,14 +160,15 @@ AddEventHandler("bcc_scene:scale", function(nr)
     local datas = json.decode(edata)
 	local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
-        if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-            datas[nr].scale = datas[nr].scale + 0.05
-            print(datas[nr].scale)
-            if datas[nr].scale > Config.MaxScale then
-            datas[nr].scale = 0.2
-            end
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].scale = datas[nr].scale + 0.05
+        if datas[nr].scale > Config.MaxScale then
+            datas[nr].scale = Config.StartingScale
+        end
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
         return
+    else
+        TriggerClientEvent("vorp:TipBottom", _source, Config.Texts.NoAuth, 2000)
     end
 end)
