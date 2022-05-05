@@ -13,7 +13,7 @@ Config.HotKeys = {
 }
 
 Config.Prompts = {
-    Edit = {[1] = "Edit Text", [2] = 0x4CC0E2FE}
+    Edit = {[1] = "Edit Scene", [2] = 0x4CC0E2FE}
 }
 
 Config.Texts = {
