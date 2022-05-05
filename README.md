@@ -1,8 +1,10 @@
 # BCC - Scene
 
-> A RedM scene text free placement system for Vorp 
+> A RedM scene text free placement system for [Vorp Core](http://docs.vorpcore.com:3000/)
 
-##Features
+Join the [VORP Community Discord](https://discord.gg/23MPbQ6)
+
+## Features
 1. Freely Add Text to a scene
 2. Remove Text in a scene
 3. Update Text in a scene
