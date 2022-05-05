@@ -45,6 +45,7 @@ All configurations available in `/config.lua`
 
 ## TODO
 - Create a config toggle for sql vs json storage, add sql support (db will give longer lived persistence to the scene texts)
+- Add a Vue based UI (for funsies).
 
  ## Dependency
  - Vorp Core
