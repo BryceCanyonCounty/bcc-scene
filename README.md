@@ -40,12 +40,12 @@ Join the [VORP Community Discord](https://discord.gg/23MPbQ6)
 All configurations available in `/config.lua`
 
 ## Disclaimers and Credits
-- I utilized Skate and rickx's [lto_scene](https://github.com/zelbeus/ricx_scene) codebase from the vorp prebuilt server for the base of this project.
-- I utilized the Sphere locator object from a similar old FiveM script [nh-scenes](https://github.com/nerohiro/nh-scenes). 
+- Heavily inspired by rickx's [lto_scene](https://github.com/zelbeus/ricx_scene).
+- Heavily inspired by a similar old FiveM script [nh-scenes](https://github.com/nerohiro/nh-scenes). 
 
 ## TODO
 - Create a config toggle for sql vs json storage, add sql support (db will give longer lived persistence to the scene texts)
-- Add a Vue based UI (for funsies).
+- Migrate to menuAPI vs warmenu
 
  ## Dependency
  - Vorp Core
