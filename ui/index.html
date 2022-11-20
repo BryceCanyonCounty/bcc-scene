@@ -119,39 +119,43 @@
         <label class="label">Location</label>
         <div class="custom-scale">
           <div class="dpad">
-            <a class="dbutton up" @click="fireEvent('moveforward', {index: tindex})">
+            <a class="dbutton up" @click="fireEvent('moveforward', {index: tindex, coords: scene.coords, distance: distance})">
               <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M15,20H9V12H4.16L12,4.16L19.84,12H15V20Z" />
               </svg>
             </a>
-            <a class="dbutton down" @click="fireEvent('movebackwards', {index: tindex})">
+            <a class="dbutton down" @click="fireEvent('movebackwards', {index: tindex, coords: scene.coords, distance: distance})">
               <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M9,4H15V12H19.84L12,19.84L4.16,12H9V4Z" />
               </svg>
             </a>
-            <a class="dbutton left" @click="fireEvent('moveleft', {index: tindex})">
+            <a class="dbutton left" @click="fireEvent('moveleft', {index: tindex, coords: scene.coords, distance: distance})">
               <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M20,9V15H12V19.84L4.16,12L12,4.16V9H20Z" />
               </svg>
             </a>
-            <a class="dbutton right" @click="fireEvent('moveright', {index: tindex})">
+            <a class="dbutton right" @click="fireEvent('moveright', {index: tindex, coords: scene.coords, distance: distance})">
               <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M4,15V9H12V4.16L19.84,12L12,19.84V15H4Z" />
               </svg>  
             </a>
             
             <div class="center">
-              <a class="dbutton forward" @click="fireEvent('moveup', {index: tindex})">
+              <a class="dbutton forward" @click="fireEvent('moveup', {index: tindex, coords: scene.coords, distance: distance})">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M20 14H14V20H10V14H4V10H10V4H14V10H20V14Z" />
                 </svg>
               </a>
-              <a class="dbutton backwards" @click="fireEvent('movedown', {index: tindex})">
+              <a class="dbutton backwards" @click="fireEvent('movedown', {index: tindex, coords: scene.coords, distance: distance})">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                    <path fill="currentColor" d="M20 14H4V10H20" />
                 </svg>
               </a>
             </div>
+          </div>
+          <input type="range" min="0.009" max="1" step="0.001" v-model="distance">
+          <div style="text-align: center;">
+            Distance ({{distance}})
           </div>
         </div>
 

@@ -2,6 +2,21 @@ UI = {}
 
 UIOpen = false
 
+function UI:Update(scenes, ActiveScene)
+    for index, scene in ipairs(scenes) do
+        if ActiveScene and ActiveScene.autoid == scene.autoid then
+            SendNUIMessage({
+                type = 'toggle',
+                visible = true,
+                subtitle = Config.Texts.MenuSubCompliment..scene.text,
+                config = Config,
+                scene = scene,
+                index = scene.autoid
+            })
+        end
+    end
+end
+
 function UI:Open(subtitle, scene, index)
     SendNUIMessage({
         type = 'toggle',
@@ -73,31 +88,31 @@ RegisterNUICallback('updatetext', function(args, cb)
 end)
 
 RegisterNUICallback('moveup', function(args, cb)
-    TriggerServerEvent("bcc_scene:moveup", args.index)
+    TriggerServerEvent("bcc_scene:moveup", args.index, args.coords, args.distance)
     cb('ok')
 end)
 
 RegisterNUICallback('movedown', function(args, cb)
-    TriggerServerEvent("bcc_scene:movedown", args.index)
+    TriggerServerEvent("bcc_scene:movedown", args.index, args.coords, args.distance)
     cb('ok')
 end)
 
 RegisterNUICallback('moveleft', function(args, cb)
-    TriggerServerEvent("bcc_scene:moveleft", args.index)
+    TriggerServerEvent("bcc_scene:moveleft", args.index, args.coords, args.distance)
     cb('ok')
 end)
 
 RegisterNUICallback('moveright', function(args, cb)
-    TriggerServerEvent("bcc_scene:moveright", args.index)
+    TriggerServerEvent("bcc_scene:moveright", args.index, args.coords, args.distance)
     cb('ok')
 end)
 
 RegisterNUICallback('moveforward', function(args, cb)
-    TriggerServerEvent("bcc_scene:moveforward", args.index)
+    TriggerServerEvent("bcc_scene:moveforward", args.index, args.coords, args.distance)
     cb('ok')
 end)
 
 RegisterNUICallback('movebackwards', function(args, cb)
-    TriggerServerEvent("bcc_scene:movebackwards", args.index)
+    TriggerServerEvent("bcc_scene:movebackwards", args.index, args.coords, args.distance)
     cb('ok')
 end)

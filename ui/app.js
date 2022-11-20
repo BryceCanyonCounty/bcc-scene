@@ -8,6 +8,7 @@ const { createApp } = Vue
         error: null,
         scene: {},
         config: {},
+        distance: 0.009,
         subtitle: 'test',
         attempts: 0,
         tindex: 0,

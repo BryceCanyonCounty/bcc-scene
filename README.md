@@ -10,7 +10,7 @@ Join the [VORP Community Discord](https://discord.gg/23MPbQ6)
 3. Update Text in a scene
 4. Hotkeys and/or commands
 5. Easily configurateble settings
-6. Json file storage  (Sql coming soon!)
+6. Json file storage OR SQL Database storage
 7. Custom UI
 
 ## Installation
@@ -42,9 +42,6 @@ All configurations available in `/config.lua`
 ## Disclaimers and Credits
 - Heavily inspired by rickx's [lto_scene](https://github.com/zelbeus/ricx_scene).
 - Heavily inspired by a similar old FiveM script [nh-scenes](https://github.com/nerohiro/nh-scenes). 
-
-## TODO
-- Create a config toggle for sql vs json storage, add sql support (db will give longer lived persistence to the scene texts)
 
  ## Dependency
  - Vorp Core

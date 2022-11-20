@@ -2,9 +2,9 @@ local EditGroup = GetRandomIntInRange(0, 0xffffff)
 local PlacePrompt
 local EditPrompt
 local SceneGroup = GetRandomIntInRange(0, 0xffffff)
-
-
 local Scenes = {}
+
+local ActiveScene
 
 SceneTarget = function()
     local Cam = GetGameplayCamCoord()
@@ -131,7 +131,13 @@ Citizen.CreateThread(function()
                     edist = 0.1
                 end
 
-                local sc = Scenes[i].coords
+                local sc
+                if Config.UseDataBase == true then
+                    sc = json.decode(Scenes[i].coords)
+                else
+                    sc = Scenes[i].coords
+                end
+
                 -- GetDistanceBetweenCoords(x1, y1, z1, x2, y2, z2, useZ)
                 local dist = GetDistanceBetweenCoords(cc.x, cc.y, cc.z, sc.x, sc.y, sc.z, 1)
                 if dist < Config.ViewDistance then
@@ -143,7 +149,14 @@ Citizen.CreateThread(function()
                         local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
                         PromptSetActiveGroupThisFrame(SceneGroup, label)
                         if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
-                            UI:Open(Config.Texts.MenuSubCompliment..Scenes[i].text, Scenes[i], i)
+                            local id
+                            if Config.UseDataBase == true then
+                                id = Scenes[i].autoid
+                            else
+                                id = i
+                            end
+                            UI:Open(Config.Texts.MenuSubCompliment..Scenes[i].text, Scenes[i], id)
+                            ActiveScene = Scenes[i]
                         end
                     end
 
@@ -180,6 +193,7 @@ end)
 RegisterNetEvent('bcc_scene:sendscenes')
 AddEventHandler('bcc_scene:sendscenes', function(scenes)
     Scenes = scenes
+    UI:Update(scenes, ActiveScene)
 end)
 
 RegisterNetEvent('bcc_scene:client_edit')
