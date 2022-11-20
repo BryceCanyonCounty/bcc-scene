@@ -32,8 +32,8 @@ Join the [VORP Community Discord](https://discord.gg/23MPbQ6)
 ### How to Edit
 1. Stand near your scene text, or enable scene ball and place it on your text
 2. Press B to display the scene menu
-3. Navigate with arrows, backspace and enter to confirm
-![image](https://user-images.githubusercontent.com/10902965/166846730-5e4c712f-5169-4397-9d5c-ee4037706bea.png)
+3. Navigate with your cursor to edit your scene
+![image](https://user-images.githubusercontent.com/10902965/202895902-90798e03-8dc4-4253-8a5e-91edd57046f2.png)
 
 
 ## How-to-configure
