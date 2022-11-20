@@ -1,7 +1,7 @@
 Config = {}
 
 Config.ViewDistance = 5.0
-Config.EditDistance = 1.0
+Config.EditDistance = 2.0
 
 -- Keep this to true for best performance.
 Config.RestartDelete = true
@@ -13,7 +13,10 @@ Config.HotKeys = {
 }
 
 Config.Prompts = {
-    Edit = {[1] = "Edit Scene", [2] = 0x4CC0E2FE}
+    Edit = {[1] = "Edit Scene", [2] = 0x4CC0E2FE},
+    Place = {
+        title = 'Place Scene'
+    }
 }
 
 Config.Texts = {
@@ -42,6 +45,10 @@ Config.Defaults = {
 }
 
 Config.TextAsterisk = true
+
+
+
+-- DO NOT TOUCH BELOW
 Config.Fonts = {0,1,5,6, 9, 11, 12, 15, 18, 19, 20, 22, 24, 25, 28, 29}
 Config.Colors = {
     --reds

@@ -11,7 +11,7 @@ Join the [VORP Community Discord](https://discord.gg/23MPbQ6)
 4. Hotkeys and/or commands
 5. Easily configurateble settings
 6. Json file storage  (Sql coming soon!)
-7. WarMenu UI
+7. Custom UI
 
 ## Installation
 1. Download this repo/codebase
@@ -45,7 +45,6 @@ All configurations available in `/config.lua`
 
 ## TODO
 - Create a config toggle for sql vs json storage, add sql support (db will give longer lived persistence to the scene texts)
-- Migrate to menuAPI vs warmenu
 
  ## Dependency
  - Vorp Core

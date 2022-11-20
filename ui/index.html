@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="wrapper" v-if="visible">
+        <div class="close-button" @click="closeView"><img width="26" height="26" src="assets/close-thick.png" alt="close" /></div>
+
+        <h1>Scene Editor</h1>
+        <hr/>
+
+        <label class="label">Text</label>
+        <div class="custom-input">
+          <input class="text-edit" v-model="scenetext">
+          <div class="close-button" @click="fireEvent('updatetext', {text: scenetext, index: tindex})"><img width="26" height="26" src="assets/content-save.png" alt="save" /></div>
+        </div>
+
+
+        <label class="label">Font</label>
+        <div
+          class="custom-select"
+          :tabindex="font.tabindex"
+          @blur="font.open = false"
+        >
+          <div
+            class="selected"
+            :class="{ open: font.open }"
+            @click="font.open = !font.open"
+          >
+            {{ font.selected }}
+          </div>
+          <div class="items" :class="{ selectHide: !font.open }">
+            <div
+              v-for="(option, i) of font.options"
+              :key="i"
+              @click="
+                  fireEvent('updatefont', {font: option, index: tindex})
+                  font.selected = option;
+                  font.open = false;
+                "
+            >
+              {{ option }}
+            </div>
+          </div>
+        </div>
+
+        <label class="label">Color</label>
+        <div
+          class="custom-select"
+          :tabindex="color.tabindex"
+          @blur="color.open = false"
+        >
+          <div
+            class="selected"
+            :class="{ open: color.open }"
+            @click="color.open = !color.open"
+          >
+            {{ color.selected }}
+          </div>
+          <div class="items" :class="{ selectHide: !color.open }">
+            <div
+              v-for="(option, i) of color.options"
+              :key="i"
+              @click="
+                  color.selected = option;
+                  color.open = false;
+                  fireEvent('updatecolor', {color: parseInt(option), index: tindex})
+                "
+            >
+              {{ option }}
+            </div>
+          </div>
+        </div>
+
+        <label class="label">Background Color</label>
+        <div
+          class="custom-select"
+          :tabindex="backgroundcolor.tabindex"
+          @blur="backgroundcolor.open = false"
+        >
+          <div
+            class="selected"
+            :class="{ open: backgroundcolor.open }"
+            @click="backgroundcolor.open = !backgroundcolor.open"
+          >
+            {{ backgroundcolor.selected }}
+          </div>
+          <div class="items" :class="{ selectHide: !backgroundcolor.open }">
+            <div
+              v-for="(option, i) of backgroundcolor.options"
+              :key="i"
+              @click="
+                  fireEvent('updatebackgroundcolor', {color: parseInt(option), index: tindex})
+                  backgroundcolor.selected = option;
+                  backgroundcolor.open = false;
+                "
+            >
+              {{ option }}
+            </div>
+          </div>
+        </div>
+
+        <label class="label">Scale</label>
+        <div class="custom-scale">
+          <input type="range" min="0.1" max="0.8" step="0.05" v-model="scale">
+          <div style="text-align: center;">
+            ({{scale}})
+          </div>
+          <button
+            class="save-button"
+            @click="fireEvent('updatescale', {scale: parseFloat(scale), index: tindex})"
+          >
+            Save
+          </button>
+        </div>
+
+        <label class="label">Location</label>
+        <div class="custom-scale">
+          <div class="dpad">
+            <a class="dbutton up" @click="fireEvent('moveforward', {index: tindex})">
+              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M15,20H9V12H4.16L12,4.16L19.84,12H15V20Z" />
+              </svg>
+            </a>
+            <a class="dbutton down" @click="fireEvent('movebackwards', {index: tindex})">
+              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M9,4H15V12H19.84L12,19.84L4.16,12H9V4Z" />
+              </svg>
+            </a>
+            <a class="dbutton left" @click="fireEvent('moveleft', {index: tindex})">
+              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M20,9V15H12V19.84L4.16,12L12,4.16V9H20Z" />
+              </svg>
+            </a>
+            <a class="dbutton right" @click="fireEvent('moveright', {index: tindex})">
+              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M4,15V9H12V4.16L19.84,12L12,19.84V15H4Z" />
+              </svg>  
+            </a>
+            
+            <div class="center">
+              <a class="dbutton forward" @click="fireEvent('moveup', {index: tindex})">
+                <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M20 14H14V20H10V14H4V10H10V4H14V10H20V14Z" />
+                </svg>
+              </a>
+              <a class="dbutton backwards" @click="fireEvent('movedown', {index: tindex})">
+                <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                   <path fill="currentColor" d="M20 14H4V10H20" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="editable">
+          <button
+            class="Button delete"
+            @click="fireEvent('deletescene', {index: tindex})"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!-- Import your JS and JS Vendor (vue.js) -->
+<script src="https://unpkg.com/vue@3.1.1/dist/vue.global.prod.js"></script>
+<script src="app.js"></script>

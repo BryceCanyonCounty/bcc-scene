@@ -1,17 +1,10 @@
+local EditGroup = GetRandomIntInRange(0, 0xffffff)
+local PlacePrompt
 local EditPrompt
-local ColorPrompt
-local DeletePrompt
-local FontPrompt
-local BGPrompt
-local MovePrompt
-local MoverightPrompt
-local MovebackPrompt
-local ScalePrompt
 local SceneGroup = GetRandomIntInRange(0, 0xffffff)
 
 
 local Scenes = {}
-local CurrentScene = {}
 
 SceneTarget = function()
     local Cam = GetGameplayCamCoord()
@@ -36,13 +29,10 @@ function DrawText3D(x, y, z, text, type, font, bg, scale)
         SetTextScale(scale, scale)
         SetTextFontForCurrentCommand(font) -- 0,1,5,6, 9, 11, 12, 15, 18, 19, 20, 22, 24, 25, 28, 29
         SetTextCentre(1)
-        -- DisplayText(str, _x, _y - 0.13)
         DisplayText(str, _x, _y - 0.0)
         
         if bg > 0 then
             local factor = (string.len(text)) / 225
-            -- DrawSprite("feeds", "hud_menu_4a", _x, _y - (0.12 + (scale / 200)), (scale / 20) + factor, scale / 5, 0.1,
-            --     Config.Colors[bg][1], Config.Colors[bg][2], Config.Colors[bg][3], 190, 0)
             
             DrawSprite("feeds", "hud_menu_4a", _x, _y  + scale / 50, (scale / 20) + factor, scale / 5, 0.1,
                 Config.Colors[bg][1], Config.Colors[bg][2], Config.Colors[bg][3], 190, 0)
@@ -59,18 +49,6 @@ function whenKeyJustPressed(key)
 end
 
 local addMode = false
-local editing = false
-local moving = false
-local closest = nil
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(1500)
-        if editing == true then
-            editing = false
-        end
-    end
-end)
 
 Citizen.CreateThread(function()
     while true do
@@ -95,9 +73,21 @@ Citizen.CreateThread(function()
     end
 end)
 
-
 Citizen.CreateThread(function()
-    WarMenu.CreateMenu('scenemenu', Config.Texts.MenuTitle)
+    local place = Config.Prompts.Place.title
+    PlacePrompt = PromptRegisterBegin()
+    PromptSetControlAction(PlacePrompt, Config.HotKeys.Place)
+    place = CreateVarString(10, 'LITERAL_STRING', place)
+    PromptSetText(PlacePrompt, place)
+    PromptSetEnabled(PlacePrompt, 1)
+    PromptSetVisible(PlacePrompt, 1)
+    PromptSetStandardMode(PlacePrompt, 1)
+    PromptSetGroup(PlacePrompt)
+    PromptSetGroup(PlacePrompt, EditGroup)
+
+    Citizen.InvokeNative(0xC5F428EE08FA7F2C, PlacePrompt, true)
+    PromptRegisterEnd(PlacePrompt)
+
 
     local str = Config.Prompts.Edit[1]
     EditPrompt = PromptRegisterBegin()
@@ -118,6 +108,11 @@ Citizen.CreateThread(function()
         if addMode == true then
             x, y, z = table.unpack(SceneTarget())
             Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15, 0.15, 93, 17, 100, 255, false, false, 2, false, false)
+
+            if Config.HotKeysEnabled == true then
+                local label = CreateVarString(10, 'LITERAL_STRING', '')
+                PromptSetActiveGroupThisFrame(EditGroup, label)
+            end
         end
 
         if Scenes[1] ~= nil then
@@ -148,44 +143,7 @@ Citizen.CreateThread(function()
                         local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
                         PromptSetActiveGroupThisFrame(SceneGroup, label)
                         if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
-                            WarMenu.SetSubTitle('scenemenu',  Config.Texts.MenuSubCompliment..Scenes[i].text) 
-                            WarMenu.OpenMenu('scenemenu')
-                        end
-                        
-                        if editing == false then                       
-                            if WarMenu.IsMenuOpened('scenemenu') then
-                                if WarMenu.Button(Config.Texts.Delete) then
-                                    TriggerServerEvent("bcc_scene:delete", i)
-                                    WarMenu.CloseMenu()
-                                end
-
-                                if WarMenu.Button(Config.Texts.Edit) then
-                                    TriggerServerEvent("bcc_scene:edit", i)
-                                    WarMenu.CloseMenu()
-                                end
-
-                                if WarMenu.Button(Config.Texts.Font) then
-                                    TriggerServerEvent("bcc_scene:font", i)
-                                end
-
-                                if WarMenu.Button(Config.Texts.Scale) then
-                                    TriggerServerEvent("bcc_scene:scale", i)
-                                end
-
-                                if WarMenu.Button(Config.Texts.Color) then
-                                    TriggerServerEvent("bcc_scene:color", i)
-                                end
-
-                                if WarMenu.Button(Config.Texts.BackgroundColor) then
-                                    TriggerServerEvent("bcc_scene:background", i)
-                                end
-
-                                if WarMenu.Button(Config.Texts.Exit) then
-                                    WarMenu.CloseMenu()
-                                end
-
-                                WarMenu.Display()
-                            end
+                            UI:Open(Config.Texts.MenuSubCompliment..Scenes[i].text, Scenes[i], i)
                         end
                     end
 
@@ -222,9 +180,6 @@ end)
 RegisterNetEvent('bcc_scene:sendscenes')
 AddEventHandler('bcc_scene:sendscenes', function(scenes)
     Scenes = scenes
-    -- for i, v in pairs(Scenes) do
-    --     print(Scenes[i])
-    -- end
 end)
 
 RegisterNetEvent('bcc_scene:client_edit')

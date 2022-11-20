@@ -65,33 +65,25 @@ AddEventHandler("bcc_scene:edit", function(nr)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveright")
-AddEventHandler("bcc_scene:moveright", function(nr)
-	local _source = source
-    local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
-    local datas = json.decode(edata)
-	local User = VorpCore.getUser(source)
-    local Character = User.getUsedCharacter
-    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-        datas[nr].coords.y = datas[nr].coords.x + 0.005
-        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
-        TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
-        return
-    end
-end)
-
 RegisterServerEvent("bcc_scene:color")
-AddEventHandler("bcc_scene:color", function(nr)
+AddEventHandler("bcc_scene:color", function(nr, color)
 	local _source = source
     local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
     local datas = json.decode(edata)
 	local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
     if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-        datas[nr].color = datas[nr].color + 1
-        if datas[nr].color > #Config.Colors then
-            datas[nr].color = 1
+        if color ~= nil then
+            datas[nr].color = color
+        else
+            datas[nr].color = datas[nr].color + 1
+            if datas[nr].color > #Config.Colors then
+                datas[nr].color = 1
+            end
         end
+        
+        
+        
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
         return
@@ -101,16 +93,20 @@ AddEventHandler("bcc_scene:color", function(nr)
 end)
 
 RegisterServerEvent("bcc_scene:background")
-AddEventHandler("bcc_scene:background", function(nr)
+AddEventHandler("bcc_scene:background", function(nr, color)
 	local _source = source
     local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
     local datas = json.decode(edata)
 	local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
     if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-        datas[nr].bg = datas[nr].bg + 1
-        if datas[nr].bg > #Config.Colors then
-            datas[nr].bg = 1
+        if color ~= nil then
+            datas[nr].bg = color
+        else
+            datas[nr].bg = datas[nr].bg + 1
+            if datas[nr].bg > #Config.Colors then
+                datas[nr].bg = 1
+            end
         end
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -121,7 +117,7 @@ AddEventHandler("bcc_scene:background", function(nr)
 end)
 
 RegisterServerEvent("bcc_scene:font")
-AddEventHandler("bcc_scene:font", function(nr)
+AddEventHandler("bcc_scene:font", function(nr, font)
 	local _source = source
     local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
     local datas = json.decode(edata)
@@ -129,9 +125,14 @@ AddEventHandler("bcc_scene:font", function(nr)
     local Character = User.getUsedCharacter
 
     if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-        datas[nr].font = datas[nr].font + 1
-        if datas[nr].font > #Config.Fonts then
-            datas[nr].font = 1
+        
+        if font ~= nil then
+            datas[nr].font = font
+        else
+            datas[nr].font = datas[nr].font + 1
+            if datas[nr].font > #Config.Fonts then
+                datas[nr].font = 1
+            end
         end
         
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
@@ -154,21 +155,116 @@ AddEventHandler("bcc_scene:edited", function(text,nr)
 end)
 
 RegisterServerEvent("bcc_scene:scale")
-AddEventHandler("bcc_scene:scale", function(nr)
+AddEventHandler("bcc_scene:scale", function(nr, scale)
     local _source = source
     local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
     local datas = json.decode(edata)
 	local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
     if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-        datas[nr].scale = datas[nr].scale + 0.05
-        if datas[nr].scale > Config.MaxScale then
-            datas[nr].scale = Config.StartingScale
+        if scale ~= nil then
+            datas[nr].scale = scale
+        else
+            datas[nr].scale = datas[nr].scale + 0.05
+            if datas[nr].scale > Config.MaxScale then
+                datas[nr].scale = Config.StartingScale
+            end
         end
+        
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
         return
     else
         TriggerClientEvent("vorp:TipBottom", _source, Config.Texts.NoAuth, 2000)
+    end
+end)
+
+RegisterServerEvent("bcc_scene:moveup")
+AddEventHandler("bcc_scene:moveup", function(nr)
+	local _source = source
+    local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
+    local datas = json.decode(edata)
+	local User = VorpCore.getUser(_source)
+    local Character = User.getUsedCharacter
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].coords.z = datas[nr].coords.z + 0.009
+        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
+        return
+    end
+end)
+
+RegisterServerEvent("bcc_scene:movedown")
+AddEventHandler("bcc_scene:movedown", function(nr)
+	local _source = source
+    local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
+    local datas = json.decode(edata)
+	local User = VorpCore.getUser(_source)
+    local Character = User.getUsedCharacter
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].coords.z = datas[nr].coords.z - 0.009
+        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
+        return
+    end
+end)
+
+RegisterServerEvent("bcc_scene:moveleft")
+AddEventHandler("bcc_scene:moveleft", function(nr)
+	local _source = source
+    local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
+    local datas = json.decode(edata)
+	local User = VorpCore.getUser(_source)
+    local Character = User.getUsedCharacter
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].coords.x = datas[nr].coords.x + 0.009
+        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
+        return
+    end
+end)
+
+RegisterServerEvent("bcc_scene:moveright")
+AddEventHandler("bcc_scene:moveright", function(nr)
+	local _source = source
+    local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
+    local datas = json.decode(edata)
+	local User = VorpCore.getUser(_source)
+    local Character = User.getUsedCharacter
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].coords.x = datas[nr].coords.x - 0.009
+        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
+        return
+    end
+end)
+
+RegisterServerEvent("bcc_scene:moveforward")
+AddEventHandler("bcc_scene:moveforward", function(nr)
+	local _source = source
+    local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
+    local datas = json.decode(edata)
+	local User = VorpCore.getUser(_source)
+    local Character = User.getUsedCharacter
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].coords.y = datas[nr].coords.y - 0.009
+        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
+        return
+    end
+end)
+
+RegisterServerEvent("bcc_scene:movebackwards")
+AddEventHandler("bcc_scene:movebackwards", function(nr)
+	local _source = source
+    local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
+    local datas = json.decode(edata)
+	local User = VorpCore.getUser(_source)
+    local Character = User.getUsedCharacter
+    if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
+        datas[nr].coords.y = datas[nr].coords.y + 0.009
+        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
+        return
     end
 end)
