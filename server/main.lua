@@ -125,6 +125,13 @@ AddEventHandler("bcc_scene:delete", function(nr)
     end
 end)
 
+RegisterServerEvent("bcc_scene:getCharData")
+AddEventHandler("bcc_scene:getCharData", function()
+    local User = VorpCore.getUser(source)
+    local Character = User.getUsedCharacter
+    TriggerClientEvent("bcc_scene:retrieveCharData", source, Character.identifier, Character.charIdentifier)
+end)
+
 RegisterServerEvent("bcc_scene:edit")
 AddEventHandler("bcc_scene:edit", function(nr)
 	local _source = source
