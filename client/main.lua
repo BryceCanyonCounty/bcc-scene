@@ -3,8 +3,19 @@ local PlacePrompt
 local EditPrompt
 local SceneGroup = GetRandomIntInRange(0, 0xffffff)
 local Scenes = {}
+local Identifier, CharIdentifier
 
 local ActiveScene
+
+ResetActiveScene = function()
+    ActiveScene = nil
+end
+
+---@param scene {id:any, charid:any}
+---@return boolean
+IsOwnerOfScene = function(scene)
+    return tostring(scene.id) == tostring(Identifier) and tonumber(scene.charid) == tonumber(CharIdentifier)
+end
 
 SceneTarget = function()
     local Cam = GetGameplayCamCoord()
@@ -34,7 +45,7 @@ function DrawText3D(x, y, z, text, type, font, bg, scale)
         if bg > 0 then
             local factor = (string.len(text)) / 225
             
-            DrawSprite("feeds", "hud_menu_4a", _x, _y  + scale / 50, (scale / 20) + factor, scale / 5, 0.1,
+            DrawSprite("feeds", "hud_menu_4a", _x, _y + scale / 50, (scale / 20) + factor, scale / 5, 0.1,
                 Config.Colors[bg][1], Config.Colors[bg][2], Config.Colors[bg][3], 190, 0)
         end
     end
@@ -52,7 +63,7 @@ local addMode = false
 
 Citizen.CreateThread(function()
     while true do
-        Citizen.Wait(1)
+        Citizen.Wait(0)
         if Config.HotKeysEnabled == true then
             if whenKeyJustPressed(Config.HotKeys.Scene) then
                 if addMode then
@@ -121,7 +132,7 @@ Citizen.CreateThread(function()
             }
             for i, v in pairs(Scenes) do
                 local cc = GetEntityCoords(PlayerPedId())
-                local edist =  Config.EditDistance
+                local edist = Config.EditDistance
                 if addMode == true then
                     cc = {
                         x = x,
@@ -141,22 +152,24 @@ Citizen.CreateThread(function()
                 -- GetDistanceBetweenCoords(x1, y1, z1, x2, y2, z2, useZ)
                 local dist = GetDistanceBetweenCoords(cc.x, cc.y, cc.z, sc.x, sc.y, sc.z, 1)
                 if dist < Config.ViewDistance then
-                    if (dist < edist) and dist <= closest.dist then
-                        closest = {
-                            dist = dist
-                        }
+                    if IsOwnerOfScene(Scenes[i]) then
+                        if (dist < edist) and dist <= closest.dist then
+                            closest = {
+                                dist = dist
+                            }
 
-                        local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
-                        PromptSetActiveGroupThisFrame(SceneGroup, label)
-                        if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
-                            local id
-                            if Config.UseDataBase == true then
-                                id = Scenes[i].autoid
-                            else
-                                id = i
+                            local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
+                            PromptSetActiveGroupThisFrame(SceneGroup, label)
+                            if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
+                                local id
+                                if Config.UseDataBase == true then
+                                    id = Scenes[i].autoid
+                                else
+                                    id = i
+                                end
+                                UI:Open(Config.Texts.MenuSubCompliment .. Scenes[i].text, Scenes[i], id)
+                                ActiveScene = Scenes[i]
                             end
-                            UI:Open(Config.Texts.MenuSubCompliment..Scenes[i].text, Scenes[i], id)
-                            ActiveScene = Scenes[i]
                         end
                     end
 
@@ -235,4 +248,15 @@ AddEventHandler('bcc_scene:start', function()
             CancelOnscreenKeyboard()
         end
     end)
+end)
+
+RegisterNetEvent('bcc_scene:retrieveCharData')
+AddEventHandler('bcc_scene:retrieveCharData', function(identifier, charIdentifier)
+    --print("Retrieving scenes for " .. identifier .. " " .. charIdentifier)
+    Identifier = identifier
+    CharIdentifier = charIdentifier
+end)
+
+Citizen.CreateThread(function()
+    TriggerServerEvent("bcc_scene:getCharData")
 end)

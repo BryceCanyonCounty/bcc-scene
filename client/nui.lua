@@ -41,11 +41,13 @@ function UI:Close()
     })
     SetNuiFocus(false, false)
     UIOpen = false
+    ResetActiveScene()
 end
 
 RegisterNUICallback('close', function(args, cb)
     SetNuiFocus(false, false) -- Sets the focus of the player view away from NUI
     UIOpen = false
+    ResetActiveScene()
     cb('ok')
 end)
 
