@@ -257,6 +257,8 @@ AddEventHandler('bcc_scene:retrieveCharData', function(identifier, charIdentifie
     CharIdentifier = charIdentifier
 end)
 
-Citizen.CreateThread(function()
+RegisterNetEvent("vorp:SelectedCharacter") -- NPC loads after selecting character
+AddEventHandler("vorp:SelectedCharacter", function(charid)
+    Wait(10000)
     TriggerServerEvent("bcc_scene:getCharData")
 end)
