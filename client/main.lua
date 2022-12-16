@@ -257,7 +257,7 @@ AddEventHandler('bcc_scene:retrieveCharData', function(identifier, charIdentifie
     CharIdentifier = charIdentifier
 end)
 
-RegisterNetEvent("vorp:SelectedCharacter") -- NPC loads after selecting character
+RegisterNetEvent("vorp:SelectedCharacter")
 AddEventHandler("vorp:SelectedCharacter", function(charid)
     Wait(10000)
     TriggerServerEvent("bcc_scene:getCharData")
