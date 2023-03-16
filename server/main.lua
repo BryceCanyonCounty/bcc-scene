@@ -48,7 +48,7 @@ Citizen.CreateThread(function()
 end)
 
 local function refreshClientScenes()
-    local result = exports.ghmattimysql:executeSync([[select * from scenes]])
+    local result = MySQL.query.await('SELECT * FROM scenes')
     if result and result.warningStatus and result.warningStatus > 1 then
         print("ERROR: Failed to update pages!", dump(result))
     else
@@ -66,7 +66,7 @@ AddEventHandler("bcc_scene:add", function(text,coords)
     local charid = Character.charIdentifier
 
     if Config.UseDataBase == true then
-        local result = exports.ghmattimysql:executeSync([[INSERT INTO scenes (`id`, `charid`, `text`, `coords`, `font`, `color`, `bg`, `scale`) VALUES (@id, @charid, @text, @coords, @font, @color, @bg, @scale);]], {["@id"] = identi, ["@charid"] = charid, ["@text"] = _text, ["@coords"] = json.encode({x=coords.x, y=coords.y, z=coords.z}), ["@font"] = Config.Defaults.Font, ["@color"] = Config.Defaults.Color, ["@bg"] =  Config.Defaults.BackgroundColor, ["@scale"] = Config.StartingScale})
+        local result = MySQL.insert.await('INSERT INTO scenes (`id`, `charid`, `text`, `coords`, `font`, `color`, `bg`, `scale`) VALUES (@id, @charid, @text, @coords, @font, @color, @bg, @scale)', {["@id"] = identi, ["@charid"] = charid, ["@text"] = _text, ["@coords"] = json.encode({x=coords.x, y=coords.y, z=coords.z}), ["@font"] = Config.Defaults.Font, ["@color"] = Config.Defaults.Color, ["@bg"] =  Config.Defaults.BackgroundColor, ["@scale"] = Config.StartingScale})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -158,8 +158,7 @@ AddEventHandler("bcc_scene:color", function(nr, color)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-    
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `color` = @color WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@color"] = color})
+        local result = MySQL.update.await('UPDATE scenes SET `color` = @color WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@color"] = color})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -179,9 +178,6 @@ AddEventHandler("bcc_scene:color", function(nr, color)
                     datas[nr].color = 1
                 end
             end
-            
-            
-            
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
@@ -199,8 +195,7 @@ AddEventHandler("bcc_scene:background", function(nr, color)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-    
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `bg` = @bg WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@bg"] = color})
+        local result = MySQL.update.await('UPDATE scenes SET `bg` = @bg WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@bg"] = color})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -238,8 +233,7 @@ AddEventHandler("bcc_scene:font", function(nr, font)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-    
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `font` = @font WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@font"] = font})
+        local result = MySQL.update.await('UPDATE scenes SET `font` = @font WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@font"] = font})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -250,9 +244,7 @@ AddEventHandler("bcc_scene:font", function(nr, font)
         local datas = json.decode(edata)
         local User = VorpCore.getUser(source)
         local Character = User.getUsedCharacter
-
         if tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier then
-            
             if font ~= nil then
                 datas[nr].font = font
             else
@@ -261,7 +253,6 @@ AddEventHandler("bcc_scene:font", function(nr, font)
                     datas[nr].font = 1
                 end
             end
-            
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
@@ -281,8 +272,7 @@ AddEventHandler("bcc_scene:edited", function(text,nr)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-    
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `text` = @text WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@text"] = _text})
+        local result = MySQL.update.await('UPDATE scenes SET `text` = @text WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@text"] = _text})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -305,8 +295,7 @@ AddEventHandler("bcc_scene:scale", function(nr, scale)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-    
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `scale` = @scale WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@scale"] = scale})
+        local result = MySQL.update.await('UPDATE scenes SET `scale` = @scale WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@scale"] = scale})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -326,7 +315,6 @@ AddEventHandler("bcc_scene:scale", function(nr, scale)
                     datas[nr].scale = Config.StartingScale
                 end
             end
-            
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
@@ -346,7 +334,7 @@ AddEventHandler("bcc_scene:moveup", function(nr, coords, distance)
         local charid = Character.charIdentifier
         coords = json.decode(coords)
         coords.z = coords.z + distance
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
+        local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -376,7 +364,7 @@ AddEventHandler("bcc_scene:movedown", function(nr, coords, distance)
         local charid = Character.charIdentifier
         coords = json.decode(coords)
         coords.z = coords.z - distance
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
+        local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -406,7 +394,7 @@ AddEventHandler("bcc_scene:moveleft", function(nr, coords, distance)
         local charid = Character.charIdentifier
         coords = json.decode(coords)
         coords.x = coords.x + distance
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
+        local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -436,7 +424,7 @@ AddEventHandler("bcc_scene:moveright", function(nr, coords, distance)
         local charid = Character.charIdentifier
         coords = json.decode(coords)
         coords.x = coords.x - distance
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
+        local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -464,10 +452,10 @@ AddEventHandler("bcc_scene:moveforward", function(nr, coords, distance)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-        
+
         coords = json.decode(coords)
         coords.y = coords.y - distance
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
+        local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else
@@ -497,8 +485,7 @@ AddEventHandler("bcc_scene:movebackwards", function(nr, coords, distance)
         local charid = Character.charIdentifier
         coords = json.decode(coords)
         coords.y = coords.y + distance
-
-        local result = exports.ghmattimysql:executeSync([[UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
+        local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
         if result and result.warningStatus > 1 then
             print("ERROR: Failed to update pages!", dump(result))
         else

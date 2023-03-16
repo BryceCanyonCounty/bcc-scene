@@ -41,10 +41,10 @@ function DrawText3D(x, y, z, text, type, font, bg, scale)
         SetTextFontForCurrentCommand(font) -- 0,1,5,6, 9, 11, 12, 15, 18, 19, 20, 22, 24, 25, 28, 29
         SetTextCentre(1)
         DisplayText(str, _x, _y - 0.0)
-        
+
         if bg > 0 then
             local factor = (string.len(text)) / 225
-            
+
             DrawSprite("feeds", "hud_menu_4a", _x, _y + scale / 50, (scale / 20) + factor, scale / 5, 0.1,
                 Config.Colors[bg][1], Config.Colors[bg][2], Config.Colors[bg][3], 190, 0)
         end
@@ -114,7 +114,7 @@ Citizen.CreateThread(function()
 
     TriggerServerEvent("bcc_scene:getscenes")
     while true do
-        Citizen.Wait(0)
+        local sleep = 500
         local x, y, z
         if addMode == true then
             x, y, z = table.unpack(SceneTarget())
@@ -130,7 +130,7 @@ Citizen.CreateThread(function()
             local closest = {
                 dist = 99999999
             }
-            for i, v in pairs(Scenes) do
+            for i, _ in pairs(Scenes) do
                 local cc = GetEntityCoords(PlayerPedId())
                 local edist = Config.EditDistance
                 if addMode == true then
@@ -148,10 +148,9 @@ Citizen.CreateThread(function()
                 else
                     sc = Scenes[i].coords
                 end
-
-                -- GetDistanceBetweenCoords(x1, y1, z1, x2, y2, z2, useZ)
-                local dist = GetDistanceBetweenCoords(cc.x, cc.y, cc.z, sc.x, sc.y, sc.z, 1)
+                local dist = #(vector3(cc.x, cc.y, cc.z) - vector3(sc.x, sc.y, sc.z))
                 if dist < Config.ViewDistance then
+                    sleep = 5
                     if IsOwnerOfScene(Scenes[i]) then
                         if (dist < edist) and dist <= closest.dist then
                             closest = {
@@ -184,6 +183,7 @@ Citizen.CreateThread(function()
                 end
             end
         end
+        Wait(sleep)
     end
 end)
 
@@ -241,7 +241,7 @@ AddEventHandler('bcc_scene:start', function()
         if (GetOnscreenKeyboardResult()) then
             scenetext = GetOnscreenKeyboardResult()
 
-            -- player: 
+            -- player:
             -- GetEntityCoords(PlayerPedId())
             addMode = false
             TriggerServerEvent("bcc_scene:add", scenetext, SceneTarget())
