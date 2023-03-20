@@ -151,7 +151,7 @@ Citizen.CreateThread(function()
                 local dist = #(vector3(cc.x, cc.y, cc.z) - vector3(sc.x, sc.y, sc.z))
                 if dist < Config.ViewDistance then
                     sleep = 5
-                    if IsOwnerOfScene(Scenes[i]) then
+                    if Config.AllowAnyoneToEdit then
                         if (dist < edist) and dist <= closest.dist then
                             closest = {
                                 dist = dist
@@ -168,6 +168,27 @@ Citizen.CreateThread(function()
                                 end
                                 UI:Open(Config.Texts.MenuSubCompliment .. Scenes[i].text, Scenes[i], id)
                                 ActiveScene = Scenes[i]
+                            end
+                        end
+                    else
+                        if IsOwnerOfScene(Scenes[i]) then
+                            if (dist < edist) and dist <= closest.dist then
+                                closest = {
+                                    dist = dist
+                                }
+
+                                local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
+                                PromptSetActiveGroupThisFrame(SceneGroup, label)
+                                if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
+                                    local id
+                                    if Config.UseDataBase == true then
+                                        id = Scenes[i].autoid
+                                    else
+                                        id = i
+                                    end
+                                    UI:Open(Config.Texts.MenuSubCompliment .. Scenes[i].text, Scenes[i], id)
+                                    ActiveScene = Scenes[i]
+                                end
                             end
                         end
                     end
