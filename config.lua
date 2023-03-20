@@ -8,9 +8,11 @@ Config.EditDistance = 2.0
 Config.RestartDelete = true
 Config.UseDataBase = true
 
+Config.AllowAnyoneToDelete = false
+
 Config.HotKeysEnabled = true
 Config.HotKeys = {
-    Scene = 0x26E9DC00, 
+    Scene = 0x26E9DC00,
     Place = 0x8CC9CD42
 }
 

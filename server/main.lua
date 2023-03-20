@@ -49,7 +49,7 @@ end)
 
 local function refreshClientScenes()
     local result = MySQL.query.await('SELECT * FROM scenes')
-    if result and result.warningStatus and result.warningStatus > 1 then
+    if not result then
         print("ERROR: Failed to update pages!", dump(result))
     else
         TriggerClientEvent("bcc_scene:sendscenes", -1, result)
@@ -67,7 +67,7 @@ AddEventHandler("bcc_scene:add", function(text,coords)
 
     if Config.UseDataBase == true then
         local result = MySQL.insert.await('INSERT INTO scenes (`id`, `charid`, `text`, `coords`, `font`, `color`, `bg`, `scale`) VALUES (@id, @charid, @text, @coords, @font, @color, @bg, @scale)', {["@id"] = identi, ["@charid"] = charid, ["@text"] = _text, ["@coords"] = json.encode({x=coords.x, y=coords.y, z=coords.z}), ["@font"] = Config.Defaults.Font, ["@color"] = Config.Defaults.Color, ["@bg"] =  Config.Defaults.BackgroundColor, ["@scale"] = Config.StartingScale})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -102,11 +102,20 @@ AddEventHandler("bcc_scene:delete", function(nr)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-        local result = exports.ghmattimysql:executeSync([[DELETE FROM scenes WHERE id = @id AND charid = @charid AND autoid = @autoid;]], {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr})
-        if result and result.warningStatus > 1 then
-            print("ERROR: Failed to update pages!", dump(result))
+        if Config.AllowAnyoneToDelete then
+            local result = MySQL.query.await('DELETE FROM scenes WHERE autoid = @autoid', {["@autoid"] = nr})
+            if not result then
+                print("ERROR: Failed to update pages!", dump(result))
+            else
+                refreshClientScenes()
+            end
         else
-            refreshClientScenes()
+            local result = MySQL.query.await('DELETE FROM scenes WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr})
+            if not result then
+                print("ERROR: Failed to update pages!", dump(result))
+            else
+                refreshClientScenes()
+            end
         end
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
@@ -159,7 +168,7 @@ AddEventHandler("bcc_scene:color", function(nr, color)
         local identi = Character.identifier
         local charid = Character.charIdentifier
         local result = MySQL.update.await('UPDATE scenes SET `color` = @color WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@color"] = color})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -196,7 +205,7 @@ AddEventHandler("bcc_scene:background", function(nr, color)
         local identi = Character.identifier
         local charid = Character.charIdentifier
         local result = MySQL.update.await('UPDATE scenes SET `bg` = @bg WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@bg"] = color})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -234,7 +243,7 @@ AddEventHandler("bcc_scene:font", function(nr, font)
         local identi = Character.identifier
         local charid = Character.charIdentifier
         local result = MySQL.update.await('UPDATE scenes SET `font` = @font WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@font"] = font})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -273,7 +282,7 @@ AddEventHandler("bcc_scene:edited", function(text,nr)
         local identi = Character.identifier
         local charid = Character.charIdentifier
         local result = MySQL.update.await('UPDATE scenes SET `text` = @text WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@text"] = _text})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -296,7 +305,7 @@ AddEventHandler("bcc_scene:scale", function(nr, scale)
         local identi = Character.identifier
         local charid = Character.charIdentifier
         local result = MySQL.update.await('UPDATE scenes SET `scale` = @scale WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@scale"] = scale})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -335,7 +344,7 @@ AddEventHandler("bcc_scene:moveup", function(nr, coords, distance)
         coords = json.decode(coords)
         coords.z = coords.z + distance
         local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -365,7 +374,7 @@ AddEventHandler("bcc_scene:movedown", function(nr, coords, distance)
         coords = json.decode(coords)
         coords.z = coords.z - distance
         local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -395,7 +404,7 @@ AddEventHandler("bcc_scene:moveleft", function(nr, coords, distance)
         coords = json.decode(coords)
         coords.x = coords.x + distance
         local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -425,7 +434,7 @@ AddEventHandler("bcc_scene:moveright", function(nr, coords, distance)
         coords = json.decode(coords)
         coords.x = coords.x - distance
         local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -456,7 +465,7 @@ AddEventHandler("bcc_scene:moveforward", function(nr, coords, distance)
         coords = json.decode(coords)
         coords.y = coords.y - distance
         local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()
@@ -486,7 +495,7 @@ AddEventHandler("bcc_scene:movebackwards", function(nr, coords, distance)
         coords = json.decode(coords)
         coords.y = coords.y + distance
         local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
-        if result and result.warningStatus > 1 then
+        if not result then
             print("ERROR: Failed to update pages!", dump(result))
         else
             refreshClientScenes()

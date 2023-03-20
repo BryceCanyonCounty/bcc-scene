@@ -24,6 +24,6 @@ files {
 
 ui_page 'ui/index.html'
 
-version '2.0.0'
+version '2.1.1'
 
 dependency 'vorp_core'
