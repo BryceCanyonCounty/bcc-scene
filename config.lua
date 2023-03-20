@@ -8,7 +8,7 @@ Config.EditDistance = 2.0
 Config.RestartDelete = true
 Config.UseDataBase = true
 
-Config.AllowAnyoneToEdit = false
+Config.AllowAnyoneToDelete = false
 
 Config.HotKeysEnabled = true
 Config.HotKeys = {

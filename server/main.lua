@@ -102,7 +102,7 @@ AddEventHandler("bcc_scene:delete", function(nr)
         local Character = User.getUsedCharacter
         local identi = Character.identifier
         local charid = Character.charIdentifier
-        if Config.AllowAnyoneToEdit then
+        if Config.AllowAnyoneToDelete then
             local result = MySQL.query.await('DELETE FROM scenes WHERE autoid = @autoid', {["@autoid"] = nr})
             if not result then
                 print("ERROR: Failed to update pages!", dump(result))

@@ -151,7 +151,7 @@ Citizen.CreateThread(function()
                 local dist = #(vector3(cc.x, cc.y, cc.z) - vector3(sc.x, sc.y, sc.z))
                 if dist < Config.ViewDistance then
                     sleep = 5
-                    if Config.AllowAnyoneToEdit then
+                    if Config.AllowAnyoneToDelete then
                         if (dist < edist) and dist <= closest.dist then
                             closest = {
                                 dist = dist
