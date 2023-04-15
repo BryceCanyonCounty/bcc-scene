@@ -56,8 +56,7 @@ local function refreshClientScenes()
     end
 end
 
-RegisterServerEvent("bcc_scene:add")
-AddEventHandler("bcc_scene:add", function(text,coords)
+RegisterServerEvent("bcc_scene:add", function(text,coords)
 	local _source = source
     local _text = tostring(text)
 	local User = VorpCore.getUser(_source)
@@ -82,8 +81,7 @@ AddEventHandler("bcc_scene:add", function(text,coords)
     end
 end)
 
-RegisterServerEvent("bcc_scene:getscenes")
-AddEventHandler("bcc_scene:getscenes", function(text)
+RegisterServerEvent("bcc_scene:getscenes", function(text)
 	local _source = source
     if Config.UseDataBase == true then
         refreshClientScenes()
@@ -94,8 +92,7 @@ AddEventHandler("bcc_scene:getscenes", function(text)
     end
 end)
 
-RegisterServerEvent("bcc_scene:delete")
-AddEventHandler("bcc_scene:delete", function(nr)
+RegisterServerEvent("bcc_scene:delete", function(nr)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -134,15 +131,13 @@ AddEventHandler("bcc_scene:delete", function(nr)
     end
 end)
 
-RegisterServerEvent("bcc_scene:getCharData")
-AddEventHandler("bcc_scene:getCharData", function()
+RegisterServerEvent("bcc_scene:getCharData", function()
     local User = VorpCore.getUser(source)
     local Character = User.getUsedCharacter
-    TriggerClientEvent("bcc_scene:retrieveCharData", source, Character.identifier, Character.charIdentifier)
+    TriggerClientEvent("bcc_scene:retrieveCharData", source, Character.identifier, Character.charIdentifier, Character.job, Character.group)
 end)
 
-RegisterServerEvent("bcc_scene:edit")
-AddEventHandler("bcc_scene:edit", function(nr)
+RegisterServerEvent("bcc_scene:edit", function(nr)
 	local _source = source
 
     if Config.UseDataBase == false then
@@ -159,8 +154,7 @@ AddEventHandler("bcc_scene:edit", function(nr)
     end
 end)
 
-RegisterServerEvent("bcc_scene:color")
-AddEventHandler("bcc_scene:color", function(nr, color)
+RegisterServerEvent("bcc_scene:color", function(nr, color)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -196,8 +190,7 @@ AddEventHandler("bcc_scene:color", function(nr, color)
     end
 end)
 
-RegisterServerEvent("bcc_scene:background")
-AddEventHandler("bcc_scene:background", function(nr, color)
+RegisterServerEvent("bcc_scene:background", function(nr, color)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -233,8 +226,7 @@ AddEventHandler("bcc_scene:background", function(nr, color)
     end
 end)
 
-RegisterServerEvent("bcc_scene:font")
-AddEventHandler("bcc_scene:font", function(nr, font)
+RegisterServerEvent("bcc_scene:font", function(nr, font)
 	local _source = source
 
     if Config.UseDataBase == true then
@@ -271,8 +263,7 @@ AddEventHandler("bcc_scene:font", function(nr, font)
     end
 end)
 
-RegisterServerEvent("bcc_scene:edited")
-AddEventHandler("bcc_scene:edited", function(text,nr)
+RegisterServerEvent("bcc_scene:edited", function(text,nr)
 	local _source = source
     local _text = tostring(text)
 
@@ -296,8 +287,7 @@ AddEventHandler("bcc_scene:edited", function(text,nr)
     end
 end)
 
-RegisterServerEvent("bcc_scene:scale")
-AddEventHandler("bcc_scene:scale", function(nr, scale)
+RegisterServerEvent("bcc_scene:scale", function(nr, scale)
     local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -333,8 +323,7 @@ AddEventHandler("bcc_scene:scale", function(nr, scale)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveup")
-AddEventHandler("bcc_scene:moveup", function(nr, coords, distance)
+RegisterServerEvent("bcc_scene:moveup", function(nr, coords, distance)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -363,8 +352,7 @@ AddEventHandler("bcc_scene:moveup", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:movedown")
-AddEventHandler("bcc_scene:movedown", function(nr, coords, distance)
+RegisterServerEvent("bcc_scene:movedown", function(nr, coords, distance)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -393,8 +381,7 @@ AddEventHandler("bcc_scene:movedown", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveleft")
-AddEventHandler("bcc_scene:moveleft", function(nr, coords, distance)
+RegisterServerEvent("bcc_scene:moveleft", function(nr, coords, distance)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -423,8 +410,7 @@ AddEventHandler("bcc_scene:moveleft", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveright")
-AddEventHandler("bcc_scene:moveright", function(nr, coords, distance)
+RegisterServerEvent("bcc_scene:moveright", function(nr, coords, distance)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -453,8 +439,7 @@ AddEventHandler("bcc_scene:moveright", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveforward")
-AddEventHandler("bcc_scene:moveforward", function(nr, coords, distance)
+RegisterServerEvent("bcc_scene:moveforward", function(nr, coords, distance)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
@@ -484,8 +469,7 @@ AddEventHandler("bcc_scene:moveforward", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:movebackwards")
-AddEventHandler("bcc_scene:movebackwards", function(nr, coords, distance)
+RegisterServerEvent("bcc_scene:movebackwards", function(nr, coords, distance)
 	local _source = source
     if Config.UseDataBase == true then
         local User = VorpCore.getUser(_source)
