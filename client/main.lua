@@ -229,7 +229,6 @@ CreateThread(function()
                             end
                         end
                     else
-                        print("debug 3")
                         if IsOwnerOfScene(Scenes[i]) then
                             if (dist < edist) and dist <= closest.dist then
                                 closest = {
