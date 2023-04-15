@@ -120,7 +120,6 @@ CreateThread(function()
     PromptRegisterEnd(EditPrompt)
 
     TriggerServerEvent("bcc_scene:getscenes")
-    PlayerData()
     while true do
         local sleep = 500
         local x, y, z
@@ -347,4 +346,10 @@ RegisterNetEvent('bcc_scene:retrieveCharData', function(identifier, charIdentifi
     Job = job
     Identifier = identifier
     CharIdentifier = charIdentifier
+end)
+
+RegisterNetEvent("vorp:SelectedCharacter")
+AddEventHandler("vorp:SelectedCharacter", function()
+    Wait(10000)
+    PlayerData()
 end)
