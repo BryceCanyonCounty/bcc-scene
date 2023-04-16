@@ -66,15 +66,15 @@ const { createApp } = Vue
               this.subtitle = event.data.subtitle
               this.scene = event.data.scene
 
-              this.font.options = event.data.config.Fonts
-              this.font.selected = event.data.scene.font
+              this.font.options = event?.data?.config?.Fonts
+              this.font.selected = event?.data?.scene?.font
               
-              this.color.selected = event.data.scene.color
-              this.backgroundcolor.selected = event.data.scene.bg
+              this.color.selected = event?.data?.scene?.color
+              this.backgroundcolor.selected = event?.data?.scene?.bg
 
-              this.scenetext = event.data.scene.text
+              this.scenetext = event?.data?.scene?.text
 
-              this.tindex = event.data.index
+              this.tindex = event?.data?.index
             }
 
             
