@@ -3,9 +3,10 @@ local PlacePrompt
 local EditPrompt
 local SceneGroup = GetRandomIntInRange(0, 0xffffff)
 local Scenes = {}
-local Identifier, CharIdentifier
-
+local Identifier, CharIdentifier, Job, Group
 local ActiveScene
+local authorized = false
+local addMode = false
 
 ResetActiveScene = function()
     ActiveScene = nil
@@ -20,7 +21,7 @@ end
 SceneTarget = function()
     local Cam = GetGameplayCamCoord()
     local handle = Citizen.InvokeNative(0x377906D8A31E5586, Cam, GetCoordsFromCam(10.0, Cam), -1, PlayerPedId(), 4)
-    local _, Hit, Coords, _, Entity = GetShapeTestResult(handle)
+    local _, _, Coords, _, _ = GetShapeTestResult(handle)
     return Coords
 end
 
@@ -33,7 +34,6 @@ end
 
 function DrawText3D(x, y, z, text, type, font, bg, scale)
     local onScreen, _x, _y = GetScreenCoordFromWorldCoord(x, y, z)
-    local px, py, pz = table.unpack(GetGameplayCamCoord())
     local str = CreateVarString(10, "LITERAL_STRING", text)
     if onScreen then
         SetTextColor(Config.Colors[type][1], Config.Colors[type][2], Config.Colors[type][3], 215)
@@ -59,12 +59,19 @@ function whenKeyJustPressed(key)
     end
 end
 
-local addMode = false
+function PlayerData()
+    CreateThread(function ()
+        while true do
+            TriggerServerEvent("bcc_scene:getCharData")
+            Wait(10000)
+        end
+    end)
+end
 
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(0)
-        if Config.HotKeysEnabled == true then
+if Config.HotKeysEnabled then
+    CreateThread(function()
+        while true do
+        Wait(0)
             if whenKeyJustPressed(Config.HotKeys.Scene) then
                 if addMode then
                     addMode = false
@@ -81,10 +88,10 @@ Citizen.CreateThread(function()
                 end
             end
         end
-    end
-end)
+    end)
+end
 
-Citizen.CreateThread(function()
+CreateThread(function()
     local place = Config.Prompts.Place.title
     PlacePrompt = PromptRegisterBegin()
     PromptSetControlAction(PlacePrompt, Config.HotKeys.Place)
@@ -119,13 +126,11 @@ Citizen.CreateThread(function()
         if addMode == true then
             x, y, z = table.unpack(SceneTarget())
             Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15, 0.15, 93, 17, 100, 255, false, false, 2, false, false)
-
-            if Config.HotKeysEnabled == true then
+            if Config.HotKeysEnabled then
                 local label = CreateVarString(10, 'LITERAL_STRING', '')
                 PromptSetActiveGroupThisFrame(EditGroup, label)
             end
         end
-
         if Scenes[1] ~= nil then
             local closest = {
                 dist = 99999999
@@ -141,9 +146,8 @@ Citizen.CreateThread(function()
                     }
                     edist = 0.1
                 end
-
                 local sc
-                if Config.UseDataBase == true then
+                if Config.UseDataBase then
                     sc = json.decode(Scenes[i].coords)
                 else
                     sc = Scenes[i].coords
@@ -151,7 +155,7 @@ Citizen.CreateThread(function()
                 local dist = #(vector3(cc.x, cc.y, cc.z) - vector3(sc.x, sc.y, sc.z))
                 if dist < Config.ViewDistance then
                     sleep = 5
-                    if Config.AllowAnyoneToDelete then
+                    if Config.AllowAnyoneToEdit then
                         if (dist < edist) and dist <= closest.dist then
                             closest = {
                                 dist = dist
@@ -161,13 +165,66 @@ Citizen.CreateThread(function()
                             PromptSetActiveGroupThisFrame(SceneGroup, label)
                             if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
                                 local id
-                                if Config.UseDataBase == true then
+                                if Config.UseDataBase then
                                     id = Scenes[i].autoid
                                 else
                                     id = i
                                 end
                                 UI:Open(Config.Texts.MenuSubCompliment .. Scenes[i].text, Scenes[i], id)
                                 ActiveScene = Scenes[i]
+                            end
+                        end
+                    elseif Config.JobLock then
+                        for _,v in pairs(Config.JobLock) do
+                            if Job == v then
+                                authorized = true
+                                break
+                            end
+                        end
+                        if authorized then
+                            if (dist < edist) and dist <= closest.dist then
+                                closest = {
+                                    dist = dist
+                                }
+
+                                local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
+                                PromptSetActiveGroupThisFrame(SceneGroup, label)
+                                if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
+                                    local id
+                                    if Config.UseDataBase then
+                                        id = Scenes[i].autoid
+                                    else
+                                        id = i
+                                    end
+                                    UI:Open(Config.Texts.MenuSubCompliment .. Scenes[i].text, Scenes[i], id)
+                                    ActiveScene = Scenes[i]
+                                end
+                            end
+                        end
+                    elseif Config.AdminOnly then
+                        for _,v in pairs(Config.AdminLock) do
+                            if Group == v then
+                                authorized = true
+                                break
+                            end
+                        end
+                        if authorized then
+                            if (dist < edist) and dist <= closest.dist then
+                                closest = {
+                                    dist = dist
+                                }
+                                local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
+                                PromptSetActiveGroupThisFrame(SceneGroup, label)
+                                if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
+                                    local id
+                                    if Config.UseDataBase then
+                                        id = Scenes[i].autoid
+                                    else
+                                        id = i
+                                    end
+                                    UI:Open(Config.Texts.MenuSubCompliment .. Scenes[i].text, Scenes[i], id)
+                                    ActiveScene = Scenes[i]
+                                end
                             end
                         end
                     else
@@ -192,15 +249,11 @@ Citizen.CreateThread(function()
                             end
                         end
                     end
-
                     local outtext = Scenes[i].text
-
-                    if Config.TextAsterisk == true then
+                    if Config.TextAsterisk then
                          outtext = "*" .. Scenes[i].text .. "*"
                     end
-
-                    DrawText3D(sc.x, sc.y, sc.z, outtext, Scenes[i].color, Scenes[i].font,
-                        Scenes[i].bg, Scenes[i].scale)
+                    DrawText3D(sc.x, sc.y, sc.z, outtext, Scenes[i].color, Scenes[i].font, Scenes[i].bg, Scenes[i].scale)
                 end
             end
         end
@@ -224,21 +277,19 @@ RegisterCommand('scene:place', function(source, args, raw)
     end
 end)
 
-RegisterNetEvent('bcc_scene:sendscenes')
-AddEventHandler('bcc_scene:sendscenes', function(scenes)
+RegisterNetEvent('bcc_scene:sendscenes', function(scenes)
     Scenes = scenes
     UI:Update(scenes, ActiveScene)
 end)
 
-RegisterNetEvent('bcc_scene:client_edit')
-AddEventHandler('bcc_scene:client_edit', function(nr)
+RegisterNetEvent('bcc_scene:client_edit', function(nr)
     local scenetext = ""
-    Citizen.CreateThread(function()
+    CreateThread(function()
         AddTextEntry('FMMC_MPM_NA', Config.Texts.AddDetails)
         DisplayOnscreenKeyboard(0, "FMMC_MPM_NA", "", "", "", "", "", 50)
         while (UpdateOnscreenKeyboard() == 0) do
             DisableAllControlActions(0);
-            Citizen.Wait(5);
+            Wait(5);
         end
         if (GetOnscreenKeyboardResult()) then
             scenetext = GetOnscreenKeyboardResult()
@@ -249,15 +300,14 @@ AddEventHandler('bcc_scene:client_edit', function(nr)
     end)
 end)
 
-RegisterNetEvent('bcc_scene:start')
-AddEventHandler('bcc_scene:start', function()
+RegisterNetEvent('bcc_scene:start', function()
     local scenetext = ""
-    Citizen.CreateThread(function()
+    CreateThread(function()
         AddTextEntry('FMMC_MPM_NA', Config.Texts.AddDetails)
         DisplayOnscreenKeyboard(0, "FMMC_MPM_NA", "", "", "", "", "", 50)
         while (UpdateOnscreenKeyboard() == 0) do
             DisableAllControlActions(0);
-            Citizen.Wait(5);
+            Wait(5);
         end
         if (GetOnscreenKeyboardResult()) then
             scenetext = GetOnscreenKeyboardResult()
@@ -271,15 +321,35 @@ AddEventHandler('bcc_scene:start', function()
     end)
 end)
 
-RegisterNetEvent('bcc_scene:retrieveCharData')
-AddEventHandler('bcc_scene:retrieveCharData', function(identifier, charIdentifier)
-    --print("Retrieving scenes for " .. identifier .. " " .. charIdentifier)
+RegisterNetEvent('bcc_scene:retrieveCharData', function(identifier, charIdentifier, job, group)
+    if Config.Debug then
+        print("Retrieving scenes for identifier: " .. identifier .. " | charIdentifier: " .. charIdentifier.." | Job: "..job.. " | group: "..group)
+        print("--------- Config Settings ------------")
+        if Config.AllowAnyoneToEdit then
+            print("true | Config.AllowAnyoneToEdit")
+        else
+            print("false | Config.AllowAnyoneToEdit")
+        end
+        if Config.AdminLock then
+            print("true | Config.AdminLock")
+        else
+            print("false | Config.AdminLock")
+        end
+        if Config.JobLock then
+            print("true | Config.JobLock")
+        else
+            print("false | Config.JobLock")
+        end
+        print("--------------------------------------")
+    end
+    Group = group
+    Job = job
     Identifier = identifier
     CharIdentifier = charIdentifier
 end)
 
 RegisterNetEvent("vorp:SelectedCharacter")
-AddEventHandler("vorp:SelectedCharacter", function(charid)
+AddEventHandler("vorp:SelectedCharacter", function()
     Wait(10000)
-    TriggerServerEvent("bcc_scene:getCharData")
+    PlayerData()
 end)

@@ -1,5 +1,5 @@
 Config = {}
-
+Config.Debug = false
 Config.ViewDistance = 5.0
 Config.EditDistance = 2.0
 
@@ -8,7 +8,11 @@ Config.EditDistance = 2.0
 Config.RestartDelete = true
 Config.UseDataBase = true
 
-Config.AllowAnyoneToDelete = false
+-- USE ONLY ONE OF THE BELOW --
+Config.AllowAnyoneToEdit = false -- True or False
+Config.AdminLock = false -- Use 'false' for no admin lock or IE group names. {'admin', 'god'}
+Config.JobLock = {'police', 'doctor'} -- Use 'false' for no job lock or IE. {'police'}
+-------------------------------
 
 Config.HotKeysEnabled = true
 Config.HotKeys = {
@@ -49,8 +53,6 @@ Config.Defaults = {
 }
 
 Config.TextAsterisk = true
-
-
 
 -- DO NOT TOUCH BELOW
 Config.Fonts = {0,1,5,6, 9, 11, 12, 15, 18, 19, 20, 22, 24, 25, 28, 29}
