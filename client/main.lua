@@ -77,6 +77,7 @@ if Config.HotKeysEnabled then
                     addMode = false
                 elseif not addMode then
                     addMode = true
+                    SceneDot()
                 end
             end
 
@@ -91,25 +92,27 @@ if Config.HotKeysEnabled then
     end)
 end
 
--- This handles the inworld "dot" and prompt, this is in its own thread as it needs to run at a higher tick rate than the rest. Prevents flicker.
 local scene_target
-CreateThread(function()
-    while true do
-        local x, y, z
-        if addMode == true then
-            scene_target = SceneTarget()
 
-            x, y, z = table.unpack(scene_target)
-            Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15, 0.15, 93, 17, 100, 255, false, false, 2, false, false)
-            if Config.HotKeysEnabled then
-                local label = CreateVarString(10, 'LITERAL_STRING', '')
-                PromptSetActiveGroupThisFrame(EditGroup, label)
+function SceneDot()
+    CreateThread(function()
+        while true do
+            local x, y, z
+            if addMode then
+                scene_target = SceneTarget()
+                x, y, z = table.unpack(scene_target)
+                Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15, 0.15, 93, 17, 100, 255, false, false, 2, false, false)
+                if Config.HotKeysEnabled then
+                    local label = CreateVarString(10, 'LITERAL_STRING', '')
+                    PromptSetActiveGroupThisFrame(EditGroup, label)
+                end
+            else
+                break
             end
+            Wait(5)
         end
-
-        Wait(5)
-    end
-end)
+    end)
+end
 
 CreateThread(function()
     local place = Config.Prompts.Place.title
@@ -281,6 +284,7 @@ RegisterCommand('scene', function(source, args, raw)
         addMode = false
     elseif not addMode then
         addMode = true
+        SceneDot()
     end
 end)
 
