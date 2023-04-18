@@ -1,3 +1,16 @@
+if Config.Framework == 'rsg-core' then
+    RSGCore = exports['rsg-core']:GetCoreObject()
+end
+
+local function Notify(text)
+    if Config.Framework == 'rsg-core' then
+        RSGCore.Functions.Notify(text, 'error')
+    else
+        TriggerEvent("vorp:TipBottom", text, 3000)
+    end
+end
+
+
 local EditGroup = GetRandomIntInRange(0, 0xffffff)
 local PlacePrompt
 local EditPrompt
@@ -106,7 +119,7 @@ if Config.HotKeysEnabled then
                 if addMode then
                     TriggerEvent("bcc_scene:start")
                 else
-                    TriggerEvent("vorp:TipBottom", Config.Texts.SceneErr, 3000)
+                    Notify(Config.Texts.SceneErr)
                 end
             end
         end
@@ -291,7 +304,7 @@ RegisterCommand('scene:place', function(source, args, raw)
     if addMode then
         TriggerEvent("bcc_scene:start")
     else
-        TriggerEvent("vorp:TipBottom", Config.Texts.SceneErr, 3000)
+        Notify(Config.Texts.SceneErr)
     end
 end)
 
@@ -366,8 +379,17 @@ RegisterNetEvent('bcc_scene:retrieveCharData', function(identifier, charIdentifi
     CharIdentifier = charIdentifier
 end)
 
-RegisterNetEvent("vorp:SelectedCharacter")
-AddEventHandler("vorp:SelectedCharacter", function()
-    Wait(10000)
-    PlayerData()
-end)
+
+if Config.Framework == 'rsg-core' then
+    RegisterNetEvent("RSGCore:Client:OnPlayerLoaded")
+    AddEventHandler("RSGCore:Client:OnPlayerLoaded", function()
+        Wait(10000)
+        PlayerData()
+    end)
+else
+    RegisterNetEvent("vorp:SelectedCharacter")
+    AddEventHandler("vorp:SelectedCharacter", function()
+        Wait(10000)
+        PlayerData()
+    end)
+end
