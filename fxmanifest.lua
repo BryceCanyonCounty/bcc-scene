@@ -25,5 +25,3 @@ files {
 ui_page 'ui/index.html'
 
 version '2.2.0'
-
-dependency 'vorp_core'
