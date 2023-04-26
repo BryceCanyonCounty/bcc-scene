@@ -5,7 +5,7 @@ Config.Framework = 'vorp' --What framework to use. Options: (vorp, rsg-core)
 Config.ViewDistance = 5.0
 Config.EditDistance = 2.0
 
--- Delete Scenes on server restart if not using DB
+-- Delete Scenes on server restart(whenever script is started)
 -- Keep this to true for best performance.
 Config.RestartDelete = true
 Config.UseDataBase = true

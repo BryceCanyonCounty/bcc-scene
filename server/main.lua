@@ -63,36 +63,50 @@ function dump(o)
     else
        return tostring(o)
     end
- end
+end
 
-Citizen.CreateThread(function()
-    if Config.RestartDelete == true and Config.UseDataBase == false then
-        local Scenes_a = {}
-        SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(Scenes_a))
+
+AddEventHandler('onResourceStart', function(resource)
+    if Config.RestartDelete == true then
+        if Config.UseDataBase == true then
+            MySQL.Async.execute('DELETE FROM scenes', {}, function(rowsChanged)
+                print('Deleting all Scenes', rowsChanged .. ' rows were deleted from the scenes table.')
+            end)
+        else
+            local Scenes_a = {}
+            SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(Scenes_a))
+        end
     end
 
     if Config.UseDataBase == true then
-        local result = exports.ghmattimysql:executeSync([[
-            CREATE TABLE IF NOT EXISTS `scenes` (
-                `autoid` INT(20) NOT NULL AUTO_INCREMENT,
-                `id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-                `charid` INT(30) NOT NULL DEFAULT '0',
-                `text` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-                `coords` JSON,
-                `font` INT(30) NOT NULL DEFAULT '0',
-                `color` INT(30) NOT NULL DEFAULT '0',
-                `bg` INT(30) NOT NULL DEFAULT '0',
-                `scale` DOUBLE NOT NULL DEFAULT '0',
-                PRIMARY KEY (`autoid`),
-                CONSTRAINT `FK_bccscenes_users` FOREIGN KEY (`id`) REFERENCES `users` (`identifier`) ON DELETE CASCADE ON UPDATE CASCADE,
-                INDEX `autoid` (`autoid`),
-                INDEX `id` (`id`),
-                INDEX `charid` (`charid`)
-            ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+        local raw_store = LoadResourceFile(GetCurrentResourceName(), "./store.json")
+        local data_store = json.decode(raw_store)
 
-        ]])
-        if result and result.warningStatus > 1 then
-            print("ERROR: Failed to create Scene WL Table", dump(result))
+        if data_store.created_table == false then
+            -- Setup server table
+            MySQL.query([[
+                CREATE TABLE IF NOT EXISTS `scenes` (
+                    `autoid` INT(20) NOT NULL AUTO_INCREMENT,
+                    `id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+                    `charid` INT(30) NOT NULL DEFAULT '0',
+                    `text` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+                    `coords` JSON,
+                    `font` INT(30) NOT NULL DEFAULT '0',
+                    `color` INT(30) NOT NULL DEFAULT '0',
+                    `bg` INT(30) NOT NULL DEFAULT '0',
+                    `scale` DOUBLE NOT NULL DEFAULT '0',
+                    PRIMARY KEY (`autoid`),
+                    CONSTRAINT `FK_bccscenes_users` FOREIGN KEY (`id`) REFERENCES `users` (`identifier`) ON DELETE CASCADE ON UPDATE CASCADE,
+                    INDEX `autoid` (`autoid`),
+                    INDEX `id` (`id`),
+                    INDEX `charid` (`charid`)
+                ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+
+            ]])
+
+            print("Created Scenes Table")
+            data_store.created_table = true
+            SaveResourceFile(GetCurrentResourceName(), "./store.json", json.encode(data_store))
         end
     end
 end)
