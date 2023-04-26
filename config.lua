@@ -6,7 +6,7 @@ Config.ViewDistance = 5.0
 Config.EditDistance = 2.0
 
 -- Delete Scenes on server restart(whenever script is started)
--- Keep this to true for best performance.
+-- Keep this to true for best performance (if not using a db)
 Config.RestartDelete = true
 Config.UseDataBase = true
 
