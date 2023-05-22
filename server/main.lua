@@ -123,13 +123,14 @@ local function refreshClientScenes()
 end
 
 RegisterServerEvent("bcc_scene:add", function(text,coords)
-    if Config.UseDataBase == true then
-		local _source = source
-		local _text = tostring(text)
+    local _source = source
+    local _text = tostring(text)
 
-		local player = getPlayerInfo(_source)
-		local identi = player.identi
-		local charid = player.charid
+    local player = getPlayerInfo(_source)
+    local identi = player.identi
+    local charid = player.charid
+		
+    if Config.UseDataBase == true then
         local result = MySQL.insert.await('INSERT INTO scenes (`id`, `charid`, `text`, `coords`, `font`, `color`, `bg`, `scale`) VALUES (@id, @charid, @text, @coords, @font, @color, @bg, @scale)', {["@id"] = identi, ["@charid"] = charid, ["@text"] = _text, ["@coords"] = json.encode({x=coords.x, y=coords.y, z=coords.z}), ["@font"] = Config.Defaults.Font, ["@color"] = Config.Defaults.Color, ["@bg"] =  Config.Defaults.BackgroundColor, ["@scale"] = Config.StartingScale})
         if not result then
             print("ERROR: Failed to update pages!", dump(result))
