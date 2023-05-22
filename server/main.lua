@@ -18,7 +18,8 @@ local function isPlayers(datas, _source)
     if Config.Framework == 'rsg-core' then
         local User = RSGCore.Functions.GetPlayer(_source)
         local Character = User.PlayerData
-        return tostring(datas[nr].id) == RSGCore.Functions.GetIdentifier(_source, 'steam') and tonumber(datas[nr].charid) == Character.cid
+		-- 'discord' and 'license are the only identifiers that work via rsg-core.'
+        return tostring(datas[nr].id) == RSGCore.Functions.GetIdentifier(_source, 'discord') and tonumber(datas[nr].charid) == Character.cid
     else
         local User = VorpCore.getUser(_source)
         local Character = User.getUsedCharacter
@@ -35,7 +36,8 @@ local function getPlayerInfo(_source)
     if Config.Framework == 'rsg-core' then
         User = RSGCore.Functions.GetPlayer(_source)
         Character = User.PlayerData
-        identi = RSGCore.Functions.GetIdentifier(source, 'steam')
+		-- 'discord' and 'license are the only identifiers that work via rsg-core.'
+        identi = RSGCore.Functions.GetIdentifier(source, 'discord')
         charid = Character.cid
     else
     	User = VorpCore.getUser(_source)
@@ -121,14 +123,13 @@ local function refreshClientScenes()
 end
 
 RegisterServerEvent("bcc_scene:add", function(text,coords)
-	local _source = source
-    local _text = tostring(text)
-
-    local player = getPlayerInfo(_source)
-    local identi = player.identi
-    local charid = player.charid
-
     if Config.UseDataBase == true then
+		local _source = source
+		local _text = tostring(text)
+
+		local player = getPlayerInfo(_source)
+		local identi = player.identi
+		local charid = player.charid
         local result = MySQL.insert.await('INSERT INTO scenes (`id`, `charid`, `text`, `coords`, `font`, `color`, `bg`, `scale`) VALUES (@id, @charid, @text, @coords, @font, @color, @bg, @scale)', {["@id"] = identi, ["@charid"] = charid, ["@text"] = _text, ["@coords"] = json.encode({x=coords.x, y=coords.y, z=coords.z}), ["@font"] = Config.Defaults.Font, ["@color"] = Config.Defaults.Color, ["@bg"] =  Config.Defaults.BackgroundColor, ["@scale"] = Config.StartingScale})
         if not result then
             print("ERROR: Failed to update pages!", dump(result))
