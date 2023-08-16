@@ -12,6 +12,7 @@ Config.UseDataBase = true
 
 -- USE ONLY ONE OF THE BELOW --
 Config.AllowAnyoneToEdit = true -- True or False
+Config.AllowAnyoneToDelete = true -- True or False
 Config.AdminLock = false -- Use 'false' for no admin lock or IE group names. {'admin', 'god'}
 Config.JobLock = false --{'police', 'doctor'} -- Use 'false' for no job lock or IE. {'police'}
 -------------------------------
