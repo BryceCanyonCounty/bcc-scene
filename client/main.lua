@@ -20,6 +20,7 @@ local Identifier, CharIdentifier, Job, Group
 local ActiveScene
 local authorized = false
 local addMode = false
+local placementSphereReady = false
 local scene_target
 
 ResetActiveScene = function()
@@ -90,11 +91,14 @@ function SceneDot()
                 scene_target = SceneTarget()
                 x, y, z = table.unpack(scene_target)
                 Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15, 0.15, 93, 17, 100, 255, false, false, 2, false, false)
+                
+                placementSphereReady = true
                 if Config.HotKeysEnabled then
                     local label = CreateVarString(10, 'LITERAL_STRING', '')
                     PromptSetActiveGroupThisFrame(EditGroup, label)
                 end
             else
+                placementSphereReady = false
                 break
             end
             Wait(5)
@@ -158,7 +162,7 @@ CreateThread(function()
     while true do
         local sleep = 500
         local x, y, z
-        if addMode == true then
+        if addMode == true and placementSphereReady == true then
             x, y, z = table.unpack(scene_target)
         end
         if Scenes[1] ~= nil then
@@ -168,7 +172,7 @@ CreateThread(function()
             for i, _ in pairs(Scenes) do
                 local cc = GetEntityCoords(PlayerPedId())
                 local edist = Config.EditDistance
-                if addMode == true then
+                if addMode == true and placementSphereReady == true then
                     cc = {
                         x = x,
                         y = y,
