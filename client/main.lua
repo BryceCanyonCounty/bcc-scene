@@ -231,7 +231,7 @@ CreateThread(function()
                                 end
                             end
                         end
-                    elseif Config.AdminOnly then
+                    elseif Config.JobLock ~= false then
                         for _,v in pairs(Config.AdminLock) do
                             if Group == v then
                                 authorized = true
