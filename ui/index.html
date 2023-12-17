@@ -13,8 +13,9 @@
 
         <label class="label">Text</label>
         <div class="custom-input">
-          <input class="text-edit" v-model="scenetext">
-          <div class="close-button" @click="fireEvent('updatetext', {text: scenetext, index: tindex})"><img width="26" height="26" src="assets/content-save.png" alt="save" /></div>
+          <textarea style="resize: none;width: 88%;height: 107%;" class="text-edit" v-model="scenetext"></textarea>
+          <!-- <input type="" class="text-edit" > -->
+          <div style="width: 1%;height: 28%;" class="close-button" @click="fireEvent('updatetext', {text: scenetext, index: tindex})"><img width="26" height="26" src="assets/content-save.png" alt="save" /></div>
         </div>
 
 
@@ -104,7 +105,7 @@
 
         <label class="label">Scale</label>
         <div class="custom-scale">
-          <input type="range" min="0.1" max="0.8" step="0.05" v-model="scale">
+          <input type="range" min="0.1" max="0.3" step="0.05" v-model="scale">
           <div style="text-align: center;">
             ({{scale}})
           </div>
