@@ -122,8 +122,6 @@ if Config.HotKeysEnabled then
             if whenKeyJustPressed(Config.HotKeys.Place) then
                 if addMode then
                     TriggerEvent("bcc_scene:start")
-                else
-                    Notify(Config.Texts.SceneErr)
                 end
             end
         end
