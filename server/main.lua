@@ -212,8 +212,7 @@ RegisterServerEvent("bcc_scene:getCharData", function()
         job = Character.job
         group = Character.group
     else
-        local User = VorpCore.getUser(_source)
-        local Character = User.getUsedCharacter
+	local Character = VorpCore.getUser(_source).getUsedCharacter 
 
         id = Character.identifier
         charid = Character.charIdentifier
