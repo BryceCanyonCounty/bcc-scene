@@ -1,3 +1,4 @@
+local BccUtils = exports['bcc-utils'].initiate()
 local Framework = Config.Framework
 local UseDatabase = Config.UseDataBase
 
@@ -569,3 +570,5 @@ RegisterNetEvent("bcc_scene:movebackwards", function(nr, coords, distance)
         end
     end
 end)
+
+BccUtils.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/BryceCanyonCounty/bcc-scene')
