@@ -1,5 +1,9 @@
 Config = {}
-Config.Debug = false
+
+Config.Devmode = {
+    Active = false, -- Set true to enable debug prints
+}
+
 Config.Framework = 'vorp' --What framework to use. Options: (vorp, rsg-core)
 
 Config.ViewDistance = 5.0

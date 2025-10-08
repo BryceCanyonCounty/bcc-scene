@@ -1,19 +1,23 @@
-fx_version "adamant"
-
-games {"rdr3"}
-
+fx_version "cerulean"
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
-server_scripts {
-	'@oxmysql/lib/MySQL.lua',
-	'config.lua',
-	'server/main.lua'
+game 'rdr3'
+lua54 'yes'
+author 'BCC Team'
+
+shared_scripts {
+    'configs/*.lua',
+    'debug_init.lua'
 }
 
 client_scripts {
-	'config.lua',
 	'client/nui.lua',
 	'client/main.lua'
+}
+
+server_scripts {
+	'@oxmysql/lib/MySQL.lua',
+	'server/main.lua'
 }
 
 files {
@@ -24,4 +28,4 @@ files {
 
 ui_page 'ui/index.html'
 
-version '2.2.3'
+version '2.3.0'

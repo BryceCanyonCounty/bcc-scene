@@ -54,6 +54,9 @@ const { createApp } = Vue
     },
     mounted() {
         window.addEventListener('message', this.onMessage);
+        this.debouncedScaleUpdate = this.debounce(() => {
+          this.fireEvent('updatescale', { scale: parseFloat(this.scale), index: this.tindex });
+        }, 300);
     },
     destroyed() {
         window.removeEventListener('message')
@@ -65,6 +68,7 @@ const { createApp } = Vue
               this.config = event.data.config
               this.subtitle = event.data.subtitle
               this.scene = event.data.scene
+              this.scale = event.data.scene?.scale || event.data.config?.StartingScale
 
               this.font.options = event?.data?.config?.Fonts
               this.font.selected = event?.data?.scene?.font
@@ -76,8 +80,6 @@ const { createApp } = Vue
 
               this.tindex = event?.data?.index
             }
-
-            
         },
         fireEvent(eve, opts = {}) {
           fetch(`https://${GetParentResourceName()}/`+eve, {
@@ -90,6 +92,13 @@ const { createApp } = Vue
           fetch(`https://${GetParentResourceName()}/close`, {
             method: 'POST'
           })
+        },
+        debounce(fn, delay = 300) {
+          let timer;
+          return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), delay);
+          };
         }
     }
   }).mount('#app')
