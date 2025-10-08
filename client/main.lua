@@ -1,9 +1,14 @@
+---@type BCCSceneDebugLib
+local DBG = BCCSceneDebug
+
 local Framework = Config.Framework
 
 if Framework == 'vorp' then
     Core = exports.vorp_core:GetCore()
+    DBG.Info("Framework initialized: VORP Core")
 else
     RSGCore = exports['rsg-core']:GetCoreObject()
+    DBG.Info("Framework initialized: RSG Core")
 end
 
 local function Notify(text)
@@ -29,13 +34,16 @@ local scene_target
 local UseDataBase = Config.UseDataBase
 
 ResetActiveScene = function()
+    DBG.Info("Resetting active scene")
     ActiveScene = nil
 end
 
 ---@param scene {id:any, charid:any}
 ---@return boolean
 IsOwnerOfScene = function(scene)
-    return tostring(scene.id) == tostring(Identifier) and tonumber(scene.charid) == tonumber(CharIdentifier)
+    local isOwner = tostring(scene.id) == tostring(Identifier) and tonumber(scene.charid) == tonumber(CharIdentifier)
+    DBG.Info("Checking scene ownership - Scene ID: " .. tostring(scene.id) .. ", Player ID: " .. tostring(Identifier) .. ", Scene CharID: " .. tostring(scene.charid) .. ", Player CharID: " .. tostring(CharIdentifier) .. ", Is Owner: " .. tostring(isOwner))
+    return isOwner
 end
 
 SceneTarget = function()
@@ -72,6 +80,7 @@ function DrawText3D(x, y, z, text, type, font, bg, scale)
 end
 
 function SceneDot()
+    DBG.Info("Starting SceneDot thread for placement sphere")
     CreateThread(function()
         while true do
             local x, y, z
@@ -87,6 +96,7 @@ function SceneDot()
                 end
             else
                 placementSphereReady = false
+                DBG.Info("Exiting SceneDot thread - addMode disabled")
                 break
             end
             Wait(5)
@@ -103,13 +113,16 @@ local function whenKeyJustPressed(key)
 end
 
 if Config.HotKeysEnabled then
+    DBG.Info("Hotkeys enabled - Starting hotkey monitoring thread")
     CreateThread(function()
         while true do
         Wait(0)
             if whenKeyJustPressed(Config.HotKeys.Scene) then
                 if addMode then
+                    DBG.Info("Scene hotkey pressed - Disabling add mode")
                     addMode = false
                 elseif not addMode then
+                    DBG.Info("Scene hotkey pressed - Enabling add mode")
                     addMode = true
                     SceneDot()
                 end
@@ -117,13 +130,17 @@ if Config.HotKeysEnabled then
 
             if whenKeyJustPressed(Config.HotKeys.Place) then
                 if addMode then
+                    DBG.Info("Place hotkey pressed - Triggering scene start")
                     TriggerEvent("bcc_scene:start")
                 else
+                    DBG.Warning("Place hotkey pressed but add mode is disabled")
                     Notify(Config.Texts.SceneErr)
                 end
             end
         end
     end)
+else
+    DBG.Info("Hotkeys disabled in config")
 end
 
 CreateThread(function()
@@ -147,6 +164,7 @@ CreateThread(function()
     UiPromptRegisterEnd(EditPrompt)
 
     TriggerServerEvent("bcc_scene:getscenes")
+    DBG.Info("Scene management thread started - Requesting scenes from server")
     while true do
         local sleep = 500
         local x, y, z
@@ -157,6 +175,7 @@ CreateThread(function()
             local closest = {
                 dist = 99999999
             }
+            DBG.Info("Processing " .. #Scenes .. " scenes for display and interaction")
             for i, _ in pairs(Scenes) do
                 local cc = GetEntityCoords(PlayerPedId())
                 local edist = Config.EditDistance
@@ -280,28 +299,36 @@ CreateThread(function()
 end)
 
 RegisterCommand('scene', function(source, args, raw)
+    DBG.Info("Scene command executed")
     if addMode then
+        DBG.Info("Scene command - Disabling add mode")
         addMode = false
     elseif not addMode then
+        DBG.Info("Scene command - Enabling add mode")
         addMode = true
         SceneDot()
     end
 end, false)
 
 RegisterCommand('scene:place', function(source, args, raw)
+    DBG.Info("Scene place command executed")
     if addMode then
+        DBG.Info("Scene place command - Triggering scene start")
         TriggerEvent("bcc_scene:start")
     else
+        DBG.Warning("Scene place command executed but add mode is disabled")
         Notify(Config.Texts.SceneErr)
     end
 end, false)
 
 RegisterNetEvent('bcc_scene:sendscenes', function(scenes)
+    DBG.Info("Received " .. (scenes and #scenes or 0) .. " scenes from server")
     Scenes = scenes
     UI:Update(scenes, ActiveScene)
 end)
 
 RegisterNetEvent('bcc_scene:client_edit', function(nr)
+    DBG.Info("Editing scene with ID: " .. tostring(nr))
     local scenetext = ""
     CreateThread(function()
         AddTextEntry('FMMC_MPM_NA', Config.Texts.AddDetails)
@@ -312,9 +339,11 @@ RegisterNetEvent('bcc_scene:client_edit', function(nr)
         end
         if (GetOnscreenKeyboardResult()) then
             scenetext = GetOnscreenKeyboardResult()
-
+            DBG.Info("Scene edit completed - New text: " .. scenetext)
             TriggerServerEvent("bcc_scene:edited", scenetext, nr)
             CancelOnscreenKeyboard()
+        else
+            DBG.Warning("Scene edit cancelled by user")
         end
     end)
 end)
@@ -341,7 +370,7 @@ RegisterNetEvent('bcc_scene:start', function()
 end)
 
 RegisterNetEvent('bcc_scene:retrieveCharData', function(identifier, charIdentifier, job, group)
-    if Config.Debug then
+    if Config.Devmode.Active then
         print("Retrieving scenes for identifier: " .. identifier .. " | charIdentifier: " .. charIdentifier.." | Job: "..job.. " | group: "..group)
         print("--------- Config Settings ------------")
         if Config.AllowAnyoneToEdit then

@@ -1,12 +1,20 @@
-local BccUtils = exports['bcc-utils'].initiate()
+---@type BCCSceneDebugLib
+local DBG = BCCSceneDebug
+
 local Framework = Config.Framework
-local UseDatabase = Config.UseDataBase
 
 if Framework == 'vorp' then
     Core = exports.vorp_core:GetCore()
+    DBG.Info("Server - Framework initialized: VORP Core")
 else
     RSGCore = exports['rsg-core']:GetCoreObject()
+    DBG.Info("Server - Framework initialized: RSG Core")
 end
+
+local BccUtils = exports['bcc-utils'].initiate()
+local UseDatabase = Config.UseDataBase
+
+DBG.Info("Server - UseDatabase setting: " .. tostring(UseDatabase))
 
 local function Notify(text, src)
     if Framework == 'vorp' then
@@ -70,18 +78,28 @@ local function dump(o)
 end
 
 AddEventHandler('onResourceStart', function(resource)
+    DBG.Info("Server - Resource starting: " .. resource)
+    if resource ~= GetCurrentResourceName() then
+        return
+    end
+
+    DBG.Info("Server - BCC Scene resource started")
     if Config.RestartDelete == true then
+        DBG.Warning("Server - RestartDelete is enabled - clearing all scenes")
         if UseDatabase == true then
             MySQL.Async.execute('DELETE FROM scenes', {}, function(rowsChanged)
+                DBG.Info('Server - Deleted ' .. rowsChanged .. ' scenes from database')
                 print('Deleting all Scenes', rowsChanged .. ' rows were deleted from the scenes table.')
             end)
         else
             local Scenes_a = {}
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(Scenes_a))
+            DBG.Info("Server - Cleared scenes.json file")
         end
     end
 
     if UseDatabase == true then
+        DBG.Info("Server - Database mode enabled - checking table setup")
         local raw_store = LoadResourceFile(GetCurrentResourceName(), "./store.json")
         local data_store = json.decode(raw_store)
 
@@ -115,10 +133,13 @@ AddEventHandler('onResourceStart', function(resource)
 end)
 
 local function refreshClientScenes()
+    DBG.Info("Server - Refreshing client scenes from database")
     local result = MySQL.query.await('SELECT * FROM scenes')
     if not result then
+        DBG.Error("Server - Failed to query scenes from database")
         print("ERROR: Failed to update pages!", dump(result))
     else
+        DBG.Info("Server - Retrieved " .. #result .. " scenes from database, sending to all clients")
         TriggerClientEvent("bcc_scene:sendscenes", -1, result)
     end
 end
@@ -126,71 +147,95 @@ end
 RegisterNetEvent("bcc_scene:add", function(text,coords)
     local src = source
     local _text = tostring(text)
+    DBG.Info("Server - Scene add request from player " .. src .. " with text: '" .. _text .. "' at coords: " .. tostring(coords))
 
     local player = getPlayerInfo(src)
     local identi = player.identi
     local charid = player.charid
 
+    DBG.Info("Server - Player info - ID: " .. tostring(identi) .. ", CharID: " .. tostring(charid))
+
     if UseDatabase == true then
+        DBG.Info("Server - Adding scene to database")
         local result = MySQL.insert.await('INSERT INTO scenes (`id`, `charid`, `text`, `coords`, `font`, `color`, `bg`, `scale`) VALUES (@id, @charid, @text, @coords, @font, @color, @bg, @scale)', {["@id"] = identi, ["@charid"] = charid, ["@text"] = _text, ["@coords"] = json.encode({x=coords.x, y=coords.y, z=coords.z}), ["@font"] = Config.Defaults.Font, ["@color"] = Config.Defaults.Color, ["@bg"] =  Config.Defaults.BackgroundColor, ["@scale"] = Config.StartingScale})
         if not result then
+            DBG.Error("Server - Failed to insert scene into database")
             print("ERROR: Failed to update pages!", dump(result))
         else
+            DBG.Success("Server - Scene successfully added to database with ID: " .. tostring(result))
             refreshClientScenes()
         end
     else
+        DBG.Info("Server - Adding scene to JSON file")
         local scene = {id = identi, charid = charid, text = _text, coords = json.encode(coords), font = Config.Defaults.Font, color = Config.Defaults.Color, bg = Config.Defaults.BackgroundColor, scale = Config.StartingScale}
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
         datas[#datas+1] = scene
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        DBG.Success("Server - Scene successfully added to JSON file")
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
     end
 end)
 
 RegisterNetEvent("bcc_scene:getscenes", function(text)
 	local src = source
+    DBG.Info("Server - Scene request from player " .. src)
     if UseDatabase == true then
+        DBG.Info("Server - Fetching scenes from database for player " .. src)
         refreshClientScenes()
     else
+        DBG.Info("Server - Fetching scenes from JSON file for player " .. src)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
+        DBG.Info("Server - Sending " .. #datas .. " scenes to player " .. src)
         TriggerClientEvent("bcc_scene:sendscenes", src, datas)
     end
 end)
 
 RegisterNetEvent("bcc_scene:delete", function(nr)
 	local src = source
+    DBG.Info("Server - Scene delete request from player " .. src .. " for scene ID: " .. tostring(nr))
+
     if UseDatabase == true then
+        DBG.Info("Server - Deleting scene from database")
         local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
         if Config.AllowAnyoneToDelete then
+            DBG.Info("Server - AllowAnyoneToDelete is enabled - deleting scene")
             local result = MySQL.query.await('DELETE FROM scenes WHERE autoid = @autoid', {["@autoid"] = nr})
             if not result then
+                DBG.Error("Server - Failed to delete scene from database")
                 print("ERROR: Failed to update pages!", dump(result))
             else
+                DBG.Success("Server - Scene deleted from database")
                 refreshClientScenes()
             end
         else
+            DBG.Info("Server - Checking ownership before deletion")
             local result = MySQL.query.await('DELETE FROM scenes WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr})
             if not result then
+                DBG.Error("Server - Failed to delete scene from database")
                 print("ERROR: Failed to update pages!", dump(result))
             else
+                DBG.Success("Server - Scene deleted from database")
                 refreshClientScenes()
             end
         end
     else
+        DBG.Info("Server - Deleting scene from JSON file")
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
         if isPlayers(datas, src) then
+            DBG.Success("Server - Player owns scene - deleting from JSON")
             table.remove( datas, nr)
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
         else
+            DBG.Warning("Server - Player does not own scene - denying deletion")
             Notify(Config.Texts.NoAuth, src)
         end
 
@@ -204,7 +249,10 @@ RegisterNetEvent("bcc_scene:getCharData", function()
     local group
     local src = source
 
+    DBG.Info("Server - Character data request from player " .. src)
+
     if Framework == 'rsg-core' then
+        DBG.Info("Server - Using RSG Core framework to get player data")
         local User = RSGCore.Functions.GetPlayer(src)
         local Character = User.PlayerData
 
@@ -213,6 +261,7 @@ RegisterNetEvent("bcc_scene:getCharData", function()
         job = Character.job
         group = Character.group
     else
+        DBG.Info("Server - Using VORP Core framework to get player data")
 	local Character = Core.getUser(src).getUsedCharacter 
 
         id = Character.identifier
@@ -221,6 +270,7 @@ RegisterNetEvent("bcc_scene:getCharData", function()
         group = Character.group
     end
 
+    DBG.Info("Server - Sending character data to player " .. src .. " - ID: " .. tostring(id) .. ", CharID: " .. tostring(charid) .. ", Job: " .. tostring(job) .. ", Group: " .. tostring(group))
     TriggerClientEvent("bcc_scene:retrieveCharData", src, id, charid, job, group)
 end)
 
@@ -349,23 +399,29 @@ end)
 RegisterNetEvent("bcc_scene:edited", function(text,nr)
 	local src = source
     local _text = tostring(text)
+    DBG.Info("Server - Scene edit request from player " .. src .. " for scene ID: " .. tostring(nr) .. " with new text: '" .. _text .. "'")
 
     if UseDatabase == true then
+        DBG.Info("Server - Updating scene in database")
         local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
         local result = MySQL.update.await('UPDATE scenes SET `text` = @text WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@text"] = _text})
         if not result then
+            DBG.Error("Server - Failed to update scene text in database")
             print("ERROR: Failed to update pages!", dump(result))
         else
+            DBG.Success("Server - Scene text updated in database")
             refreshClientScenes()
         end
     else
+        DBG.Info("Server - Updating scene in JSON file")
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
         datas[nr].text = _text
         SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
+        DBG.Success("Server - Scene text updated in JSON file")
         TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
     end
 end)

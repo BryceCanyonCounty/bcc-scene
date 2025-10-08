@@ -6,7 +6,8 @@ lua54 'yes'
 author 'BCC Team'
 
 shared_scripts {
-    'configs/*.lua'
+    'configs/*.lua',
+    'debug_init.lua'
 }
 
 client_scripts {
