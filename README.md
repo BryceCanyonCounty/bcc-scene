@@ -13,6 +13,12 @@
 7. Custom UI
 8. Job/Admin Lock
 
+## Dependency
+
+- Compatible with Vorp Core or RSG Core
+- [vorp_core](https://github.com/VORPCORE/vorp-core-lua)
+- [bcc-utils](https://github.com/BryceCanyonCounty/bcc-utils) (for version check)
+
 ## Installation
 
 1. Download this repo/codebase
@@ -40,13 +46,9 @@
 
 ## How-to-configure
 
-All configurations available in `/config.lua`
+All configurations available in `configs/config.lua`
 
 ## Disclaimers and Credits
 
 - Heavily inspired by rickx's [lto_scene](https://github.com/zelbeus/ricx_scene)
 - Heavily inspired by a similar old FiveM script [nh-scenes](https://github.com/nerohiro/nh-scenes)
-
-## Dependency
-
-- Vorp Core or RSG Core
