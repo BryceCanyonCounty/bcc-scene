@@ -1,49 +1,50 @@
-if Config.Framework == 'rsg-core' then
-    RSGCore = exports['rsg-core']:GetCoreObject()
+local Framework = Config.Framework
+local UseDatabase = Config.UseDataBase
+
+if Framework == 'vorp' then
+    Core = exports.vorp_core:GetCore()
 else
-    TriggerEvent("getCore",function(core)
-        VorpCore = core
-    end)
+    RSGCore = exports['rsg-core']:GetCoreObject()
 end
 
-local function Notify(text, _source)
-    if Config.Framework == 'rsg-core' then
-        TriggerClientEvent('RSGCore:Notify', _source, text, 'error')
+local function Notify(text, src)
+    if Framework == 'vorp' then
+        Core.NotifyRightTip(src, text, 3000)
     else
-        TriggerClientEvent("vorp:TipBottom", _source, text, 2000)
+        TriggerClientEvent('RSGCore:Notify', src, text, 'error')
     end
 end
 
-local function isPlayers(datas, _source)
-    if Config.Framework == 'rsg-core' then
-        local User = RSGCore.Functions.GetPlayer(_source)
-        local Character = User.PlayerData
-		-- 'discord' and 'license are the only identifiers that work via rsg-core.'
-        return tostring(datas[nr].id) == RSGCore.Functions.GetIdentifier(_source, 'discord') and tonumber(datas[nr].charid) == Character.cid
-    else
-        local User = VorpCore.getUser(_source)
+local function isPlayers(datas, src)
+    if Framework == 'vorp' then
+        local User = Core.getUser(src)
         local Character = User.getUsedCharacter
         return tostring(datas[nr].id) == Character.identifier and tonumber(datas[nr].charid) == Character.charIdentifier
+    else
+        local User = RSGCore.Functions.GetPlayer(src)
+        local Character = User.PlayerData
+		-- 'discord' and 'license are the only identifiers that work via rsg-core.'
+        return tostring(datas[nr].id) == RSGCore.Functions.GetIdentifier(src, 'discord') and tonumber(datas[nr].charid) == Character.cid
     end
 end
 
-local function getPlayerInfo(_source)
+local function getPlayerInfo(src)
 	local User
     local Character
     local identi
     local charid
 
-    if Config.Framework == 'rsg-core' then
-        User = RSGCore.Functions.GetPlayer(_source)
+    if Framework == 'vorp' then
+        User = Core.getUser(src)
+        Character = User.getUsedCharacter
+        identi = Character.identifier
+        charid = Character.charIdentifier
+    else
+        User = RSGCore.Functions.GetPlayer(src)
         Character = User.PlayerData
 		-- 'discord' and 'license are the only identifiers that work via rsg-core.'
         identi = RSGCore.Functions.GetIdentifier(source, 'discord')
         charid = Character.cid
-    else
-    	User = VorpCore.getUser(_source)
-        Character = User.getUsedCharacter
-        identi = Character.identifier
-        charid = Character.charIdentifier
     end
 
     return {
@@ -54,7 +55,7 @@ local function getPlayerInfo(_source)
     }
 end
 
-function dump(o)
+local function dump(o)
     if type(o) == 'table' then
        local s = '{ '
        for k,v in pairs(o) do
@@ -67,10 +68,9 @@ function dump(o)
     end
 end
 
-
 AddEventHandler('onResourceStart', function(resource)
     if Config.RestartDelete == true then
-        if Config.UseDataBase == true then
+        if UseDatabase == true then
             MySQL.Async.execute('DELETE FROM scenes', {}, function(rowsChanged)
                 print('Deleting all Scenes', rowsChanged .. ' rows were deleted from the scenes table.')
             end)
@@ -80,7 +80,7 @@ AddEventHandler('onResourceStart', function(resource)
         end
     end
 
-    if Config.UseDataBase == true then
+    if UseDatabase == true then
         local raw_store = LoadResourceFile(GetCurrentResourceName(), "./store.json")
         local data_store = json.decode(raw_store)
 
@@ -122,15 +122,15 @@ local function refreshClientScenes()
     end
 end
 
-RegisterServerEvent("bcc_scene:add", function(text,coords)
-    local _source = source
+RegisterNetEvent("bcc_scene:add", function(text,coords)
+    local src = source
     local _text = tostring(text)
 
-    local player = getPlayerInfo(_source)
+    local player = getPlayerInfo(src)
     local identi = player.identi
     local charid = player.charid
-		
-    if Config.UseDataBase == true then
+
+    if UseDatabase == true then
         local result = MySQL.insert.await('INSERT INTO scenes (`id`, `charid`, `text`, `coords`, `font`, `color`, `bg`, `scale`) VALUES (@id, @charid, @text, @coords, @font, @color, @bg, @scale)', {["@id"] = identi, ["@charid"] = charid, ["@text"] = _text, ["@coords"] = json.encode({x=coords.x, y=coords.y, z=coords.z}), ["@font"] = Config.Defaults.Font, ["@color"] = Config.Defaults.Color, ["@bg"] =  Config.Defaults.BackgroundColor, ["@scale"] = Config.StartingScale})
         if not result then
             print("ERROR: Failed to update pages!", dump(result))
@@ -147,24 +147,24 @@ RegisterServerEvent("bcc_scene:add", function(text,coords)
     end
 end)
 
-RegisterServerEvent("bcc_scene:getscenes", function(text)
-	local _source = source
-    if Config.UseDataBase == true then
+RegisterNetEvent("bcc_scene:getscenes", function(text)
+	local src = source
+    if UseDatabase == true then
         refreshClientScenes()
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-        TriggerClientEvent("bcc_scene:sendscenes", _source, datas)
+        TriggerClientEvent("bcc_scene:sendscenes", src, datas)
     end
 end)
 
-RegisterServerEvent("bcc_scene:delete", function(nr)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:delete", function(nr)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
-        
+
         if Config.AllowAnyoneToDelete then
             local result = MySQL.query.await('DELETE FROM scenes WHERE autoid = @autoid', {["@autoid"] = nr})
             if not result then
@@ -183,36 +183,36 @@ RegisterServerEvent("bcc_scene:delete", function(nr)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-        
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             table.remove( datas, nr)
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
         else
-            Notify(Config.Texts.NoAuth, _source)
+            Notify(Config.Texts.NoAuth, src)
         end
 
     end
 end)
 
-RegisterServerEvent("bcc_scene:getCharData", function()
+RegisterNetEvent("bcc_scene:getCharData", function()
     local id
     local charid
     local job
     local group
-    local _source = source
+    local src = source
 
-    if Config.Framework == 'rsg-core' then
-        local User = RSGCore.Functions.GetPlayer(_source)
+    if Framework == 'rsg-core' then
+        local User = RSGCore.Functions.GetPlayer(src)
         local Character = User.PlayerData
 
-        id = RSGCore.Functions.GetIdentifier(_source, 'steam')
+        id = RSGCore.Functions.GetIdentifier(src, 'steam')
         charid = Character.cid
         job = Character.job
         group = Character.group
     else
-	local Character = VorpCore.getUser(_source).getUsedCharacter 
+	local Character = Core.getUser(src).getUsedCharacter 
 
         id = Character.identifier
         charid = Character.charIdentifier
@@ -220,29 +220,29 @@ RegisterServerEvent("bcc_scene:getCharData", function()
         group = Character.group
     end
 
-    TriggerClientEvent("bcc_scene:retrieveCharData", _source, id, charid, job, group)
+    TriggerClientEvent("bcc_scene:retrieveCharData", src, id, charid, job, group)
 end)
 
-RegisterServerEvent("bcc_scene:edit", function(nr)
-	local _source = source
+RegisterNetEvent("bcc_scene:edit", function(nr)
+	local src = source
 
-    if Config.UseDataBase == false then
+    if UseDatabase == false then
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, _source) then
-            TriggerClientEvent("bcc_scene:client_edit", _source, nr)
+        if isPlayers(datas, src) then
+            TriggerClientEvent("bcc_scene:client_edit", src, nr)
             return
         else
-            Notify(Config.Texts.NoAuth, _source)
+            Notify(Config.Texts.NoAuth, src)
         end
     end
 end)
 
-RegisterServerEvent("bcc_scene:color", function(nr, color)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:color", function(nr, color)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -256,7 +256,7 @@ RegisterServerEvent("bcc_scene:color", function(nr, color)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, _source) then
+        if isPlayers(datas, src) then
             if color ~= nil then
                 datas[nr].color = color
             else
@@ -269,15 +269,15 @@ RegisterServerEvent("bcc_scene:color", function(nr, color)
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
         else
-            Notify(Config.Texts.NoAuth, _source)
+            Notify(Config.Texts.NoAuth, src)
         end
     end
 end)
 
-RegisterServerEvent("bcc_scene:background", function(nr, color)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:background", function(nr, color)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -291,7 +291,7 @@ RegisterServerEvent("bcc_scene:background", function(nr, color)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, _source) then
+        if isPlayers(datas, src) then
             if color ~= nil then
                 datas[nr].bg = color
             else
@@ -304,16 +304,16 @@ RegisterServerEvent("bcc_scene:background", function(nr, color)
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
         else
-            Notify(Config.Texts.NoAuth, _source)
+            Notify(Config.Texts.NoAuth, src)
         end
     end
 end)
 
-RegisterServerEvent("bcc_scene:font", function(nr, font)
-	local _source = source
+RegisterNetEvent("bcc_scene:font", function(nr, font)
+	local src = source
 
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -326,8 +326,8 @@ RegisterServerEvent("bcc_scene:font", function(nr, font)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-        
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             if font ~= nil then
                 datas[nr].font = font
             else
@@ -340,17 +340,17 @@ RegisterServerEvent("bcc_scene:font", function(nr, font)
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
         else
-            Notify(Config.Texts.NoAuth, _source)
+            Notify(Config.Texts.NoAuth, src)
         end
     end
 end)
 
-RegisterServerEvent("bcc_scene:edited", function(text,nr)
-	local _source = source
+RegisterNetEvent("bcc_scene:edited", function(text,nr)
+	local src = source
     local _text = tostring(text)
 
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -369,10 +369,10 @@ RegisterServerEvent("bcc_scene:edited", function(text,nr)
     end
 end)
 
-RegisterServerEvent("bcc_scene:scale", function(nr, scale)
-    local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:scale", function(nr, scale)
+    local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -385,8 +385,8 @@ RegisterServerEvent("bcc_scene:scale", function(nr, scale)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-        
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             if scale ~= nil then
                 datas[nr].scale = scale
             else
@@ -399,15 +399,15 @@ RegisterServerEvent("bcc_scene:scale", function(nr, scale)
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
             return
         else
-            Notify(Config.Texts.NoAuth, _source)
+            Notify(Config.Texts.NoAuth, src)
         end
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveup", function(nr, coords, distance)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:moveup", function(nr, coords, distance)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -422,8 +422,8 @@ RegisterServerEvent("bcc_scene:moveup", function(nr, coords, distance)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-         
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             datas[nr].coords.z = datas[nr].coords.z + distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -432,10 +432,10 @@ RegisterServerEvent("bcc_scene:moveup", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:movedown", function(nr, coords, distance)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:movedown", function(nr, coords, distance)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
         coords = json.decode(coords)
@@ -449,8 +449,8 @@ RegisterServerEvent("bcc_scene:movedown", function(nr, coords, distance)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-    
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             datas[nr].coords.z = datas[nr].coords.z - distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -459,10 +459,10 @@ RegisterServerEvent("bcc_scene:movedown", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveleft", function(nr, coords, distance)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:moveleft", function(nr, coords, distance)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
         coords = json.decode(coords)
@@ -476,8 +476,8 @@ RegisterServerEvent("bcc_scene:moveleft", function(nr, coords, distance)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-    
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             datas[nr].coords.x = datas[nr].coords.x + distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -486,10 +486,10 @@ RegisterServerEvent("bcc_scene:moveleft", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveright", function(nr, coords, distance)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:moveright", function(nr, coords, distance)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -504,8 +504,8 @@ RegisterServerEvent("bcc_scene:moveright", function(nr, coords, distance)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-    
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             datas[nr].coords.x = datas[nr].coords.x - distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -514,10 +514,10 @@ RegisterServerEvent("bcc_scene:moveright", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:moveforward", function(nr, coords, distance)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:moveforward", function(nr, coords, distance)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
 
@@ -532,8 +532,8 @@ RegisterServerEvent("bcc_scene:moveforward", function(nr, coords, distance)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-    
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             datas[nr].coords.y = datas[nr].coords.y - distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -542,13 +542,13 @@ RegisterServerEvent("bcc_scene:moveforward", function(nr, coords, distance)
     end
 end)
 
-RegisterServerEvent("bcc_scene:movebackwards", function(nr, coords, distance)
-	local _source = source
-    if Config.UseDataBase == true then
-        local player = getPlayerInfo(_source)
+RegisterNetEvent("bcc_scene:movebackwards", function(nr, coords, distance)
+	local src = source
+    if UseDatabase == true then
+        local player = getPlayerInfo(src)
         local identi = player.identi
         local charid = player.charid
-        
+
         coords = json.decode(coords)
         coords.y = coords.y + distance
         local result = MySQL.update.await('UPDATE scenes SET `coords` = @coords WHERE id = @id AND charid = @charid AND autoid = @autoid', {["@id"] = identi, ["@charid"] = charid, ["@autoid"] = nr, ["@coords"] = json.encode(coords)})
@@ -560,8 +560,8 @@ RegisterServerEvent("bcc_scene:movebackwards", function(nr, coords, distance)
     else
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
-    
-        if isPlayers(datas, _source) then
+
+        if isPlayers(datas, src) then
             datas[nr].coords.y = datas[nr].coords.y + distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)

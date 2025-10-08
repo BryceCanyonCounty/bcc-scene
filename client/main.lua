@@ -1,15 +1,19 @@
-if Config.Framework == 'rsg-core' then
+local Framework = Config.Framework
+
+if Framework == 'vorp' then
+    Core = exports.vorp_core:GetCore()
+else
     RSGCore = exports['rsg-core']:GetCoreObject()
 end
 
 local function Notify(text)
-    if Config.Framework == 'rsg-core' then
-        RSGCore.Functions.Notify(text, 'error')
+    if Framework == 'vorp' then
+        Core.NotifyRightTip(text, 4000)
+        TriggerEvent("vorp:TipBottom", text, 4000)
     else
-        TriggerEvent("vorp:TipBottom", text, 3000)
+        RSGCore.Functions.Notify(text, 'error')
     end
 end
-
 
 local EditGroup = GetRandomIntInRange(0, 0xffffff)
 local PlacePrompt
@@ -22,6 +26,7 @@ local authorized = false
 local addMode = false
 local placementSphereReady = false
 local scene_target
+local UseDataBase = Config.UseDataBase
 
 ResetActiveScene = function()
     ActiveScene = nil
@@ -61,26 +66,9 @@ function DrawText3D(x, y, z, text, type, font, bg, scale)
             local factor = (string.len(text)) / 225
 
             DrawSprite("feeds", "hud_menu_4a", _x, _y + scale / 50, (scale / 20) + factor, scale / 5, 0.1,
-                Config.Colors[bg][1], Config.Colors[bg][2], Config.Colors[bg][3], 190, 0)
+                Config.Colors[bg][1], Config.Colors[bg][2], Config.Colors[bg][3], 190, false)
         end
     end
-end
-
-function whenKeyJustPressed(key)
-    if Citizen.InvokeNative(0x580417101DDB492F, 0, key) then
-        return true
-    else
-        return false
-    end
-end
-
-function PlayerData()
-    CreateThread(function ()
-        while true do
-            TriggerServerEvent("bcc_scene:getCharData")
-            Wait(10000)
-        end
-    end)
 end
 
 function SceneDot()
@@ -91,11 +79,11 @@ function SceneDot()
                 scene_target = SceneTarget()
                 x, y, z = table.unpack(scene_target)
                 Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15, 0.15, 93, 17, 100, 255, false, false, 2, false, false)
-                
+
                 placementSphereReady = true
                 if Config.HotKeysEnabled then
                     local label = CreateVarString(10, 'LITERAL_STRING', '')
-                    PromptSetActiveGroupThisFrame(EditGroup, label)
+                    UiPromptSetActiveGroupThisFrame(EditGroup, label, 1, 0, 0, 0)
                 end
             else
                 placementSphereReady = false
@@ -104,6 +92,14 @@ function SceneDot()
             Wait(5)
         end
     end)
+end
+
+local function whenKeyJustPressed(key)
+    if Citizen.InvokeNative(0x580417101DDB492F, 0, key) then
+        return true
+    else
+        return false
+    end
 end
 
 if Config.HotKeysEnabled then
@@ -131,32 +127,24 @@ if Config.HotKeysEnabled then
 end
 
 CreateThread(function()
-    local place = Config.Prompts.Place.title
-    PlacePrompt = PromptRegisterBegin()
-    PromptSetControlAction(PlacePrompt, Config.HotKeys.Place)
-    place = CreateVarString(10, 'LITERAL_STRING', place)
-    PromptSetText(PlacePrompt, place)
-    PromptSetEnabled(PlacePrompt, 1)
-    PromptSetVisible(PlacePrompt, 1)
-    PromptSetStandardMode(PlacePrompt, 1)
-    PromptSetGroup(PlacePrompt)
-    PromptSetGroup(PlacePrompt, EditGroup)
-
-    Citizen.InvokeNative(0xC5F428EE08FA7F2C, PlacePrompt, true)
-    PromptRegisterEnd(PlacePrompt)
+    PlacePrompt = UiPromptRegisterBegin()
+    UiPromptSetControlAction(PlacePrompt, Config.HotKeys.Place)
+    UiPromptSetText(PlacePrompt, CreateVarString(10, 'LITERAL_STRING', Config.Prompts.Place.title))
+    UiPromptSetEnabled(PlacePrompt, true)
+    UiPromptSetVisible(PlacePrompt, true)
+    UiPromptSetStandardMode(PlacePrompt, true)
+    UiPromptSetGroup(PlacePrompt, EditGroup, 0)
+    UiPromptRegisterEnd(PlacePrompt)
 
 
-    local str = Config.Prompts.Edit[1]
-    EditPrompt = PromptRegisterBegin()
-    PromptSetControlAction(EditPrompt, Config.Prompts.Edit[2])
-    str = CreateVarString(10, 'LITERAL_STRING', str)
-    PromptSetText(EditPrompt, str)
-    PromptSetEnabled(EditPrompt, 1)
-    PromptSetVisible(EditPrompt, 1)
-    PromptSetStandardMode(EditPrompt, 1)
-    PromptSetGroup(EditPrompt, SceneGroup)
-    Citizen.InvokeNative(0xC5F428EE08FA7F2C, EditPrompt, true)
-    PromptRegisterEnd(EditPrompt)
+    EditPrompt = UiPromptRegisterBegin()
+    UiPromptSetControlAction(EditPrompt, Config.Prompts.Edit[2])
+    UiPromptSetText(EditPrompt, CreateVarString(10, 'LITERAL_STRING', Config.Prompts.Edit[1]))
+    UiPromptSetEnabled(EditPrompt, true)
+    UiPromptSetVisible(EditPrompt, true)
+    UiPromptSetStandardMode(EditPrompt, true)
+    UiPromptSetGroup(EditPrompt, SceneGroup, 0)
+    UiPromptRegisterEnd(EditPrompt)
 
     TriggerServerEvent("bcc_scene:getscenes")
     while true do
@@ -173,20 +161,16 @@ CreateThread(function()
                 local cc = GetEntityCoords(PlayerPedId())
                 local edist = Config.EditDistance
                 if addMode == true and placementSphereReady == true then
-                    cc = {
-                        x = x,
-                        y = y,
-                        z = z
-                    }
+                    cc = vector3(x, y, z)
                     edist = 0.1
                 end
                 local sc
-                if Config.UseDataBase then
+                if UseDataBase then
                     sc = json.decode(Scenes[i].coords)
                 else
                     sc = Scenes[i].coords
                 end
-                local dist = #(vector3(cc.x, cc.y, cc.z) - vector3(sc.x, sc.y, sc.z))
+                local dist = #(cc - vector3(sc.x, sc.y, sc.z))
                 if dist < Config.ViewDistance then
                     sleep = 5
                     if Config.AllowAnyoneToEdit then
@@ -196,10 +180,10 @@ CreateThread(function()
                             }
 
                             local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
-                            PromptSetActiveGroupThisFrame(SceneGroup, label)
+                            UiPromptSetActiveGroupThisFrame(SceneGroup, label, 1, 0, 0, 0)
                             if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
                                 local id
-                                if Config.UseDataBase then
+                                if UseDataBase then
                                     id = Scenes[i].autoid
                                 else
                                     id = i
@@ -222,10 +206,10 @@ CreateThread(function()
                                 }
 
                                 local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
-                                PromptSetActiveGroupThisFrame(SceneGroup, label)
+                                UiPromptSetActiveGroupThisFrame(SceneGroup, label, 1, 0, 0, 0)
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
                                     local id
-                                    if Config.UseDataBase then
+                                    if UseDataBase then
                                         id = Scenes[i].autoid
                                     else
                                         id = i
@@ -248,10 +232,10 @@ CreateThread(function()
                                     dist = dist
                                 }
                                 local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
-                                PromptSetActiveGroupThisFrame(SceneGroup, label)
+                                UiPromptSetActiveGroupThisFrame(SceneGroup, label, 1, 0, 0, 0)
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
                                     local id
-                                    if Config.UseDataBase then
+                                    if UseDataBase then
                                         id = Scenes[i].autoid
                                     else
                                         id = i
@@ -269,10 +253,10 @@ CreateThread(function()
                                 }
 
                                 local label = CreateVarString(10, 'LITERAL_STRING', Scenes[i].text)
-                                PromptSetActiveGroupThisFrame(SceneGroup, label)
+                                UiPromptSetActiveGroupThisFrame(SceneGroup, label, 1, 0, 0, 0)
                                 if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
                                     local id
-                                    if Config.UseDataBase == true then
+                                    if UseDataBase == true then
                                         id = Scenes[i].autoid
                                     else
                                         id = i
@@ -302,7 +286,7 @@ RegisterCommand('scene', function(source, args, raw)
         addMode = true
         SceneDot()
     end
-end)
+end, false)
 
 RegisterCommand('scene:place', function(source, args, raw)
     if addMode then
@@ -310,7 +294,7 @@ RegisterCommand('scene:place', function(source, args, raw)
     else
         Notify(Config.Texts.SceneErr)
     end
-end)
+end, false)
 
 RegisterNetEvent('bcc_scene:sendscenes', function(scenes)
     Scenes = scenes
@@ -383,16 +367,22 @@ RegisterNetEvent('bcc_scene:retrieveCharData', function(identifier, charIdentifi
     CharIdentifier = charIdentifier
 end)
 
+local function PlayerData()
+    CreateThread(function ()
+        while true do
+            TriggerServerEvent("bcc_scene:getCharData")
+            Wait(10000)
+        end
+    end)
+end
 
-if Config.Framework == 'rsg-core' then
-    RegisterNetEvent("RSGCore:Client:OnPlayerLoaded")
-    AddEventHandler("RSGCore:Client:OnPlayerLoaded", function()
+if Framework == 'vorp' then
+    RegisterNetEvent("vorp:SelectedCharacter", function()
         Wait(10000)
         PlayerData()
     end)
 else
-    RegisterNetEvent("vorp:SelectedCharacter")
-    AddEventHandler("vorp:SelectedCharacter", function()
+    RegisterNetEvent("RSGCore:Client:OnPlayerLoaded", function()
         Wait(10000)
         PlayerData()
     end)
