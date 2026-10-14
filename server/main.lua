@@ -24,7 +24,10 @@ local function Notify(text, src)
     end
 end
 
-local function isPlayers(datas, src)
+local function isPlayers(datas, src, nr)
+    if not datas or not datas[nr] then
+        return false
+    end
     if Framework == 'vorp' then
         local User = Core.getUser(src)
         local Character = User.getUsedCharacter
@@ -167,7 +170,7 @@ RegisterNetEvent("bcc_scene:add", function(text,coords)
         end
     else
         DBG.Info("Server - Adding scene to JSON file")
-        local scene = {id = identi, charid = charid, text = _text, coords = json.encode(coords), font = Config.Defaults.Font, color = Config.Defaults.Color, bg = Config.Defaults.BackgroundColor, scale = Config.StartingScale}
+        local scene = {id = identi, charid = charid, text = _text, coords = {x=coords.x, y=coords.y, z=coords.z}, font = Config.Defaults.Font, color = Config.Defaults.Color, bg = Config.Defaults.BackgroundColor, scale = Config.StartingScale}
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
         datas[#datas+1] = scene
@@ -228,7 +231,7 @@ RegisterNetEvent("bcc_scene:delete", function(nr)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             DBG.Success("Server - Player owns scene - deleting from JSON")
             table.remove( datas, nr)
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
@@ -281,7 +284,7 @@ RegisterNetEvent("bcc_scene:edit", function(nr)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             TriggerClientEvent("bcc_scene:client_edit", src, nr)
             return
         else
@@ -307,7 +310,7 @@ RegisterNetEvent("bcc_scene:color", function(nr, color)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             if color ~= nil then
                 datas[nr].color = color
             else
@@ -342,7 +345,7 @@ RegisterNetEvent("bcc_scene:background", function(nr, color)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             if color ~= nil then
                 datas[nr].bg = color
             else
@@ -378,7 +381,7 @@ RegisterNetEvent("bcc_scene:font", function(nr, font)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             if font ~= nil then
                 datas[nr].font = font
             else
@@ -443,7 +446,7 @@ RegisterNetEvent("bcc_scene:scale", function(nr, scale)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             if scale ~= nil then
                 datas[nr].scale = scale
             else
@@ -480,7 +483,7 @@ RegisterNetEvent("bcc_scene:moveup", function(nr, coords, distance)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             datas[nr].coords.z = datas[nr].coords.z + distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -507,7 +510,7 @@ RegisterNetEvent("bcc_scene:movedown", function(nr, coords, distance)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             datas[nr].coords.z = datas[nr].coords.z - distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -534,7 +537,7 @@ RegisterNetEvent("bcc_scene:moveleft", function(nr, coords, distance)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             datas[nr].coords.x = datas[nr].coords.x + distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -562,7 +565,7 @@ RegisterNetEvent("bcc_scene:moveright", function(nr, coords, distance)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             datas[nr].coords.x = datas[nr].coords.x - distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -590,7 +593,7 @@ RegisterNetEvent("bcc_scene:moveforward", function(nr, coords, distance)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             datas[nr].coords.y = datas[nr].coords.y - distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
@@ -618,7 +621,7 @@ RegisterNetEvent("bcc_scene:movebackwards", function(nr, coords, distance)
         local edata = LoadResourceFile(GetCurrentResourceName(), "./scenes.json")
         local datas = json.decode(edata)
 
-        if isPlayers(datas, src) then
+        if isPlayers(datas, src, nr) then
             datas[nr].coords.y = datas[nr].coords.y + distance
             SaveResourceFile(GetCurrentResourceName(), "./scenes.json", json.encode(datas))
             TriggerClientEvent("bcc_scene:sendscenes", -1, datas)
