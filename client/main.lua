@@ -128,7 +128,7 @@ function SceneDot()
                 Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, x, y, z,
                                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0.15,
                                      0.15, 93, 17, 100, 255, false, false, 2,
-                                     false, false)
+                                     false, 0, 0, false)
 
                 placementSphereReady = true
                 if Config.HotKeysEnabled then
@@ -140,7 +140,7 @@ function SceneDot()
                 DBG.Info("Exiting SceneDot thread - addMode disabled")
                 break
             end
-            Wait(5)
+            Wait(0)
         end
     end)
 end
@@ -215,15 +215,13 @@ CreateThread(function()
         end
         if Scenes[1] ~= nil then
             local closest = {dist = 99999999}
-            DBG.Info("Processing " .. #Scenes ..
-                         " scenes for display and interaction")
+            local cc = GetEntityCoords(PlayerPedId())
+            local edist = Config.EditDistance
+            if addMode == true and placementSphereReady == true then
+                cc = vector3(x, y, z)
+                edist = 0.1
+            end
             for i, _ in pairs(Scenes) do
-                local cc = GetEntityCoords(PlayerPedId())
-                local edist = Config.EditDistance
-                if addMode == true and placementSphereReady == true then
-                    cc = vector3(x, y, z)
-                    edist = 0.1
-                end
                 local sc
                 if UseDataBase then
                     sc = json.decode(Scenes[i].coords)
@@ -232,22 +230,9 @@ CreateThread(function()
                 end
                 local dist = #(cc - vector3(sc.x, sc.y, sc.z))
                 if dist < Config.ViewDistance then
-                    sleep = 5
-                    local canEdit = CanEditScene(Scenes[i])
-                    if canEdit and (dist < edist) and dist <= closest.dist then
-                        closest = {dist = dist}
-
-                        local label = CreateVarString(10, 'LITERAL_STRING',
-                                                      Scenes[i].text)
-                        UiPromptSetActiveGroupThisFrame(SceneGroup, label, 1, 0,
-                                                        0, 0)
-
-                        if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt) then
-                            local id = UseDataBase and Scenes[i].autoid or i
-                            ActiveScene = Scenes[i]
-                            UI:Open(Config.Texts.MenuSubCompliment ..
-                                        Scenes[i].text, Scenes[i], id)
-                        end
+                    sleep = 0
+                    if CanEditScene(Scenes[i]) and (dist < edist) and dist <= closest.dist then
+                        closest = {dist = dist, index = i, scene = Scenes[i]}
                     end
                     local outtext = Scenes[i].text
                     if Config.TextAsterisk then
@@ -255,6 +240,16 @@ CreateThread(function()
                     end
                     DrawText3D(sc.x, sc.y, sc.z, outtext, Scenes[i].color,
                                Scenes[i].font, Scenes[i].bg, Scenes[i].scale)
+                end
+            end
+            if closest.scene ~= nil then
+                local label = CreateVarString(10, 'LITERAL_STRING', closest.scene.text)
+                UiPromptSetActiveGroupThisFrame(SceneGroup, label, 1, 0, 0, 0)
+
+                if Citizen.InvokeNative(0xC92AC953F0A982AE, EditPrompt, 0) then
+                    local id = UseDataBase and closest.scene.autoid or closest.index
+                    ActiveScene = closest.scene
+                    UI:Open(Config.Texts.MenuSubCompliment .. closest.scene.text, closest.scene, id)
                 end
             end
         end
