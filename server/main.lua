@@ -52,7 +52,7 @@ local function getPlayerInfo(src)
         User = RSGCore.Functions.GetPlayer(src)
         Character = User.PlayerData
 		-- 'discord' and 'license are the only identifiers that work via rsg-core.'
-        identi = RSGCore.Functions.GetIdentifier(source, 'discord')
+        identi = RSGCore.Functions.GetIdentifier(src, 'discord')
         charid = Character.cid
     end
 
@@ -256,7 +256,7 @@ RegisterNetEvent("bcc_scene:getCharData", function()
         local User = RSGCore.Functions.GetPlayer(src)
         local Character = User.PlayerData
 
-        id = RSGCore.Functions.GetIdentifier(src, 'steam')
+        id = RSGCore.Functions.GetIdentifier(src, 'discord')
         charid = Character.cid
         job = Character.job
         group = Character.group
